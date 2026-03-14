@@ -11,9 +11,26 @@
   // ===== CHECKOUT DETECTION =====
 
   const CHECKOUT_URL_PATTERNS = [
-    /\/checkout/i, /\/basket/i, /\/cart/i, /\/payment/i,
-    /\/order-confirm/i, /\/buy-now/i, /\/order.*confirm/i, /\/pay\b/i
+    /\/checkout/i, /\/basket/i, /\/cart/i, /\/buy-now/i,
+    /\/payment/i, /\/order-summary/i, /\/confirm-order/i,
+    /\/place-order/i, /\/secure\/checkout/i, /\/purchase/i
   ];
+
+  // URL segments that indicate non-purchase pages — never trigger on these
+  const EXCLUDED_URL_SEGMENTS = [
+    'signin', 'login', 'register', 'account', 'profile',
+    'wishlist', 'saved-items', 'returns', 'orders', 'help',
+    'support', 'search', 'browse', 'category', 'department',
+    'homepage', 'yourstore'
+  ];
+
+  // Amazon-specific checkout paths
+  const AMAZON_CHECKOUT_PATTERNS = [
+    /\/gp\/buy\//i, /\/checkout\//i, /\/gp\/cart/i
+  ];
+
+  // Amazon product page — only trigger if buy/checkout button is in DOM
+  const AMAZON_PRODUCT_PATTERN = /\/dp\//i;
 
   const SHOPPING_DOMAINS = [
     'amazon.co.uk', 'asos.com', 'ebay.co.uk', 'argos.co.uk',
@@ -57,18 +74,71 @@
   }
 
   function isCheckoutPage() {
-    const url = window.location.href;
+    const url = window.location.href.toLowerCase();
+    const pathname = window.location.pathname;
     const hostname = window.location.hostname.replace(/^www\./, '');
 
-    const isShoppingSite = SHOPPING_DOMAINS.some(domain =>
-      hostname === domain || hostname.endsWith('.' + domain)
-    );
+    // Never trigger on excluded URL segments (unless also contains checkout)
+    const hasExcluded = EXCLUDED_URL_SEGMENTS.some(seg => url.includes(seg));
+    const hasCheckoutWord = /checkout/i.test(url);
+    if (hasExcluded && !hasCheckoutWord) return false;
 
+    const isAmazon = hostname === 'amazon.co.uk' || hostname.endsWith('.amazon.co.uk');
+
+    // Amazon-specific logic
+    if (isAmazon) {
+      const isAmazonCheckout = AMAZON_CHECKOUT_PATTERNS.some(p => p.test(pathname));
+      if (isAmazonCheckout) return true;
+
+      // Product pages only trigger if a buy/checkout button is present
+      if (AMAZON_PRODUCT_PATTERN.test(pathname)) {
+        return hasPurchaseDOMSignal();
+      }
+      return false;
+    }
+
+    // All other sites: require checkout URL pattern + DOM purchase signal
     const hasCheckoutPath = CHECKOUT_URL_PATTERNS.some(pattern =>
-      pattern.test(window.location.pathname)
+      pattern.test(pathname)
     );
 
-    return isShoppingSite || hasCheckoutPath;
+    if (!hasCheckoutPath) return false;
+
+    return hasPurchaseDOMSignal();
+  }
+
+  /**
+   * Check the page DOM for purchase-related signals: buttons with checkout
+   * text, elements with checkout-related IDs/classes, or order total text.
+   */
+  function hasPurchaseDOMSignal() {
+    // Check buttons/links for purchase text
+    const purchaseButtonTexts = [
+      'place order', 'confirm order', 'pay now', 'complete purchase',
+      'proceed to payment', 'buy now', 'checkout', 'proceed to checkout'
+    ];
+    const buttons = document.querySelectorAll('button, a, input[type="submit"]');
+    for (const btn of buttons) {
+      const text = (btn.textContent || btn.value || '').toLowerCase().trim();
+      if (purchaseButtonTexts.some(t => text.includes(t))) return true;
+    }
+
+    // Check elements with checkout-related IDs or classes
+    const checkoutSelectors = [
+      '[id*="checkout-button"]', '[id*="place-order"]',
+      '[id*="confirm-purchase"]', '[id*="payment-submit"]',
+      '[class*="checkout-button"]', '[class*="place-order"]',
+      '[class*="confirm-purchase"]', '[class*="payment-submit"]'
+    ];
+    for (const selector of checkoutSelectors) {
+      if (document.querySelector(selector)) return true;
+    }
+
+    // Check for order total text
+    const bodyText = document.body ? document.body.innerText : '';
+    if (/order total|total:|amount due/i.test(bodyText)) return true;
+
+    return false;
   }
 
   // ===== PRODUCT EXTRACTION =====

@@ -8,11 +8,26 @@ const CHECKOUT_URL_PATTERNS = [
   /\/checkout/i,
   /\/basket/i,
   /\/cart/i,
-  /\/payment/i,
-  /\/order-confirm/i,
   /\/buy-now/i,
-  /\/order.*confirm/i,
-  /\/pay\b/i
+  /\/payment/i,
+  /\/order-summary/i,
+  /\/confirm-order/i,
+  /\/place-order/i,
+  /\/secure\/checkout/i,
+  /\/purchase/i
+];
+
+// URL segments that indicate non-purchase pages
+const EXCLUDED_URL_SEGMENTS = [
+  'signin', 'login', 'register', 'account', 'profile',
+  'wishlist', 'saved-items', 'returns', 'orders', 'help',
+  'support', 'search', 'browse', 'category', 'department',
+  'homepage', 'yourstore'
+];
+
+// Amazon-specific checkout paths
+const AMAZON_CHECKOUT_PATTERNS = [
+  /\/gp\/buy\//i, /\/checkout\//i, /\/gp\/cart/i
 ];
 
 // Major UK e-commerce domains
@@ -81,18 +96,25 @@ function isCheckoutURL(url) {
   try {
     const urlObj = new URL(url);
     const hostname = urlObj.hostname.replace(/^www\./, '');
+    const fullUrl = url.toLowerCase();
 
-    // Check if it's a known shopping domain
-    const isShoppingSite = SHOPPING_DOMAINS.some(domain =>
-      hostname === domain || hostname.endsWith('.' + domain)
-    );
+    // Never trigger on excluded URL segments (unless also contains checkout)
+    const hasExcluded = EXCLUDED_URL_SEGMENTS.some(seg => fullUrl.includes(seg));
+    const hasCheckoutWord = /checkout/i.test(fullUrl);
+    if (hasExcluded && !hasCheckoutWord) return false;
 
-    // Check URL path patterns
-    const hasCheckoutPath = CHECKOUT_URL_PATTERNS.some(pattern =>
+    const isAmazon = hostname === 'amazon.co.uk' || hostname.endsWith('.amazon.co.uk');
+
+    // Amazon-specific: only trigger on known checkout/cart paths
+    if (isAmazon) {
+      return AMAZON_CHECKOUT_PATTERNS.some(p => p.test(urlObj.pathname));
+    }
+
+    // All other sites: require a checkout URL pattern
+    // (DOM signal check happens in content script where we have page access)
+    return CHECKOUT_URL_PATTERNS.some(pattern =>
       pattern.test(urlObj.pathname)
     );
-
-    return isShoppingSite || hasCheckoutPath;
   } catch {
     return false;
   }
