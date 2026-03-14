@@ -1,48 +1,19 @@
 {
   "manifest_version": 3,
-  "name": "Dopamine Delay",
-  "version": "1.0.0",
-  "description": "A pause-before-purchase companion for ADHD brains. Intercepts online checkouts with a brief, voluntary pause — grounded in dopamine reward deficit research.",
-  "permissions": ["storage", "activeTab"],
+  "name": "Pause Before Purchase – Dopamine Delay",
+  "version": "2.0.0",
+  "description": "Pause impulse purchases, earn points, and sync your progress to the cloud.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://*.supabase.co/*"
+  ],
   "background": {
     "service_worker": "background.js"
   },
-  "content_scripts": [
-    {
-      "matches": [
-        "*://*.amazon.co.uk/*",
-        "*://*.asos.com/*",
-        "*://*.ebay.co.uk/*",
-        "*://*.argos.co.uk/*",
-        "*://*.tesco.com/*",
-        "*://*.boots.com/*",
-        "*://*.johnlewis.com/*",
-        "*://*.currys.co.uk/*",
-        "*://*.shein.co.uk/*",
-        "*://*.shein.com/*",
-        "*://*.klarna.com/*"
-      ],
-      "js": ["lib/storage.js", "lib/alternatives.js", "content.js"],
-      "css": ["overlay.css"],
-      "run_at": "document_idle"
-    },
-    {
-      "matches": ["<all_urls>"],
-      "js": ["lib/storage.js", "lib/alternatives.js", "content.js"],
-      "css": ["overlay.css"],
-      "run_at": "document_idle",
-      "include_globs": [
-        "*checkout*",
-        "*basket*",
-        "*cart*",
-        "*payment*",
-        "*order-confirm*",
-        "*buy-now*",
-        "*order*confirm*",
-        "*pay*"
-      ]
-    }
-  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -51,6 +22,14 @@
       "128": "icons/icon128.png"
     }
   },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ],
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
