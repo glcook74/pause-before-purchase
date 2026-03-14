@@ -1,6 +1,6 @@
 # Dopamine Delay
 
-**A pause-before-purchase Chrome extension designed for ADHD brains.**
+**A pause-before-purchase browser extension for Chrome and Safari, designed for ADHD brains.**
 
 Dopamine Delay intercepts online checkout pages and introduces a brief, voluntary pause — giving your prefrontal cortex a chance to weigh in before dopamine-driven impulse spending takes over.
 
@@ -90,7 +90,9 @@ Detects urgency language ("Only X left", "Flash sale", "Limited time", etc.) and
 
 ---
 
-## Installation (Chrome Developer Mode)
+## Installation
+
+### Chrome (Developer Mode)
 
 1. Download or clone this repository
 2. Open Chrome and navigate to `chrome://extensions/`
@@ -99,6 +101,48 @@ Detects urgency language ("Only X left", "Flash sale", "Limited time", etc.) and
 5. Select the folder containing `manifest.json`
 6. The Dopamine Delay icon will appear in your extensions toolbar
 7. Complete the onboarding flow that opens automatically
+
+### Safari (macOS & iOS)
+
+Dopamine Delay is cross-browser compatible with Safari Web Extensions. There are two ways to install:
+
+#### Option A: Safari 26+ (direct load — no Xcode needed)
+
+1. Open Safari → Settings → Advanced → enable **Show features for web developers**
+2. Go to Develop → Web Extensions → click **Load Extension...**
+3. Select the folder containing `manifest.json`
+4. Grant the requested permissions when prompted
+5. The extension will appear in Safari's toolbar
+
+This also works on **iOS/iPadOS 26+** via Safari settings.
+
+#### Option B: Convert with Xcode (for App Store distribution)
+
+1. Install Xcode 12+ on macOS
+2. Open Terminal and run:
+   ```bash
+   xcrun safari-web-extension-converter /path/to/dopamine-delay
+   ```
+3. Xcode will open with a generated project
+4. Review any warnings about unsupported APIs (Dopamine Delay uses only compatible APIs)
+5. Build and run — Safari will prompt to enable the extension
+6. For App Store distribution: archive and submit via Xcode or App Store Connect
+
+#### Option C: App Store Connect (no Mac required — Safari 26+)
+
+1. Zip the extension folder (the folder containing `manifest.json`)
+2. Upload the ZIP directly to [App Store Connect](https://appstoreconnect.apple.com)
+3. App Store Connect auto-converts and packages for Safari on macOS, iOS, and iPadOS
+4. Requires an Apple Developer account ($99/year)
+
+### Android (via Kiwi Browser)
+
+Chrome extensions don't run on mobile Chrome, but [Kiwi Browser](https://kiwibrowser.com) for Android supports them:
+
+1. Install Kiwi Browser from the Google Play Store
+2. Navigate to `kiwi://extensions`
+3. Enable Developer mode
+4. Load the extension as unpacked (same as Chrome)
 
 ---
 
@@ -121,6 +165,7 @@ Detects urgency language ("Only X left", "Flash sale", "Limited time", etc.) and
 │   ├── icon48.png         # Extension management icon (48×48)
 │   └── icon128.png        # Chrome Web Store icon (128×128)
 ├── lib/
+│   ├── browser-polyfill.js # Chrome/Safari API compatibility layer
 │   ├── storage.js         # Namespaced Chrome storage utilities (dd_* keys)
 │   └── alternatives.js    # Dopamine alternative library with rotation
 └── README.md
@@ -157,10 +202,30 @@ All storage keys are namespaced with `dd_` prefix:
 
 ---
 
+## Browser Compatibility
+
+| Browser | Platform | Status |
+|---------|----------|--------|
+| Chrome | Desktop | Fully supported |
+| Safari 14+ | macOS | Supported (via Xcode converter) |
+| Safari 26+ | macOS, iOS, iPadOS | Supported (direct load or App Store Connect) |
+| Kiwi Browser | Android | Supported (loads Chrome extensions) |
+| Firefox | Desktop & Android | Planned (minor API port needed) |
+| Edge | Desktop | Should work (Chromium-based, untested) |
+
+### Safari-Specific Notes
+
+- The extension uses `chrome.storage.local` throughout, which Safari supports natively
+- Safari merges `storage.local` and `storage.sync` — we use `local` only, so this has no impact
+- The `browser-polyfill.js` layer handles any API differences transparently
+- No `webRequest` API is used, so there are no compatibility blockers
+- Tested with Manifest V3, which Safari fully supports
+
+---
+
 ## Phase 1 Scope
 
 This is Phase 1. The following are **not** included and are deferred to later phases:
-- Mobile app
 - Open banking / real account balance integration
 - BNPL calculator
 - AI personalisation engine

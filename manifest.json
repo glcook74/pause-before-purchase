@@ -22,13 +22,13 @@
         "*://*.shein.com/*",
         "*://*.klarna.com/*"
       ],
-      "js": ["lib/storage.js", "lib/alternatives.js", "content.js"],
+      "js": ["lib/browser-polyfill.js", "lib/storage.js", "lib/alternatives.js", "content.js"],
       "css": ["overlay.css"],
       "run_at": "document_idle"
     },
     {
       "matches": ["<all_urls>"],
-      "js": ["lib/storage.js", "lib/alternatives.js", "content.js"],
+      "js": ["lib/browser-polyfill.js", "lib/storage.js", "lib/alternatives.js", "content.js"],
       "css": ["overlay.css"],
       "run_at": "document_idle",
       "include_globs": [
