@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dopamine Delay — Pause before you buy | ADHD spending tool</title>
+  <meta name="description" content="Dopamine Delay is a free Chrome extension that helps adults with ADHD pause before impulse purchases. Built on neuroscience, designed with warmth.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://dopaminedelay.com/">
+  <meta property="og:title" content="Dopamine Delay — Pause before you buy">
+  <meta property="og:description" content="A free Chrome extension that helps adults with ADHD pause before impulse purchases. Built on neuroscience.">
+  <meta property="og:image" content="/images/og-image.jpg">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://dopaminedelay.com/">
+  <link rel="icon" type="image/png" href="images/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/nav.css">
+</head>
+<body>
+
+  <!-- ===== NAVIGATION ===== -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo">
+        <span class="nav__logo-icon">⏸</span>
+        <span>Dopamine Delay</span>
+      </a>
+      <ul class="nav__links">
+        <li><a href="how-it-works.html" class="nav__link">How It Works</a></li>
+        <li><a href="pricing.html" class="nav__link">Pricing</a></li>
+        <li><a href="about.html" class="nav__link">About</a></li>
+        <li><a href="#chrome-store" class="nav__cta">Add to Chrome</a></li>
+      </ul>
+      <button class="nav__hamburger" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="nav__mobile">
+      <ul class="nav__mobile-links">
+        <li><a href="how-it-works.html">How It Works</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+      <a href="#chrome-store" class="nav__mobile-cta">Add to Chrome</a>
+    </div>
+  </nav>
+  <div class="nav-spacer"></div>
+
+  <!-- ===== SECTION 1: HERO ===== -->
+  <section class="section section--cream">
+    <div class="container text-center">
+      <span class="gold-label">Built for ADHD brains</span>
+      <h1>Your brain isn't broken.<br>It just needs a better pause.</h1>
+      <p style="font-size: 1.15rem; color: #5A5A6E; max-width: 640px; margin: 20px auto 0;">
+        Dopamine Delay is a Chrome extension that gives you a moment — and something better to do — before you buy something you might regret.
+      </p>
+      <div class="btn-group">
+        <a href="#chrome-store" class="btn btn--primary">Add to Chrome — it's free &rarr;</a>
+        <a href="#how-it-works" class="btn btn--outline">See how it works</a>
+      </div>
+      <div class="trust-signals">
+        <span class="trust-signal"><span>✓</span> Free to install</span>
+        <span class="trust-signal"><span>✓</span> No account needed</span>
+        <span class="trust-signal"><span>✓</span> Built by people with ADHD</span>
+      </div>
+
+      <!-- Mockup of pause overlay -->
+      <div style="max-width: 420px; margin: 48px auto 0; background: #F5F0E8; border-radius: 20px; padding: 32px 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.1), 0 0 0 1px rgba(42,125,107,0.08); text-align: center;">
+        <h3 style="font-family: Georgia, serif; font-size: 1.3rem; color: #1A1A2E; margin-bottom: 6px;">Before you buy</h3>
+        <p style="font-size: 0.92rem; color: #5A5A6E; margin-bottom: 20px;">Quick check — what kind of purchase is this?</p>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: rgba(255,255,255,0.7); border: 2px solid rgba(42,125,107,0.2); border-radius: 12px; text-align: left;">
+            <span style="font-size: 1.4rem;">✅</span>
+            <div>
+              <strong style="font-size: 0.92rem; color: #1A1A2E;">NECESSARY</strong>
+              <span style="display: block; font-size: 0.78rem; color: #8B8578;">I genuinely need this</span>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: rgba(255,255,255,0.7); border: 2px solid rgba(201,146,26,0.2); border-radius: 12px; text-align: left;">
+            <span style="font-size: 1.4rem;">📋</span>
+            <div>
+              <strong style="font-size: 0.92rem; color: #1A1A2E;">PLANNED</strong>
+              <span style="display: block; font-size: 0.78rem; color: #8B8578;">I've been thinking about this</span>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: rgba(255,255,255,0.7); border: 2px solid rgba(201,100,26,0.2); border-radius: 12px; text-align: left;">
+            <span style="font-size: 1.4rem;">⚡</span>
+            <div>
+              <strong style="font-size: 0.92rem; color: #1A1A2E;">IMPULSIVE</strong>
+              <span style="display: block; font-size: 0.78rem; color: #8B8578;">I just want it right now</span>
+            </div>
+          </div>
+        </div>
+        <p style="font-size: 0.78rem; color: #8B8578; font-style: italic; margin-top: 14px;">Be honest — it helps.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: THE PROBLEM ===== -->
+  <section class="section section--cream">
+    <div class="container--narrow text-center">
+      <span class="gold-label">The &pound;1,600 problem</span>
+      <h2>ADHD costs more than you think.</h2>
+    </div>
+    <div class="container" style="margin-top: 36px;">
+      <div class="grid-3">
+        <div class="stat-card">
+          <div class="stat-card__number">&pound;1,600</div>
+          <div class="stat-card__label">The estimated annual 'ADHD tax' on spending, according to Monzo's research</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__number">50%</div>
+          <div class="stat-card__label">of adults with ADHD find it difficult to stick to a budget — vs 15% of neurotypical adults (Monzo/YouGov)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__number">3&times;</div>
+          <div class="stat-card__label">more likely to make impulsive financial decisions, according to peer-reviewed clinical research</div>
+        </div>
+      </div>
+      <div class="container--narrow" style="margin-top: 32px;">
+        <p style="color: #5A5A6E;">It's not a willpower problem. Research from Volkow et al. (2009) shows that ADHD involves lower dopamine receptor availability in the brain's reward pathway — meaning your brain is genuinely wired to seek stimulation. Online shopping is designed to exploit exactly that.</p>
+        <p class="attribution">Sources: Monzo/YouGov (2022), Volkow et al. JAMA (2009)</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: HOW IT WORKS ===== -->
+  <section class="section section--teal-tint" id="how-it-works">
+    <div class="container text-center">
+      <span class="gold-label">How it works</span>
+      <h2>A pause. A redirect. A better choice.</h2>
+      <div class="grid-3" style="margin-top: 40px; text-align: left;">
+        <div class="card">
+          <div style="font-size: 2rem; margin-bottom: 12px;">🛒</div>
+          <h3 style="margin-bottom: 8px;">1. We spot the checkout</h3>
+          <p style="font-size: 0.95rem; color: #5A5A6E;">Dopamine Delay detects when you reach a checkout page on Amazon, ASOS, eBay, and 20+ other sites.</p>
+        </div>
+        <div class="card">
+          <div style="font-size: 2rem; margin-bottom: 12px;">⏸</div>
+          <h3 style="margin-bottom: 8px;">2. You get a moment</h3>
+          <p style="font-size: 0.95rem; color: #5A5A6E;">A gentle overlay asks: is this necessary, planned, or impulsive? No judgment — just awareness.</p>
+          <p class="science-note">Labelling an impulse reduces its emotional intensity — affect labelling research, Lieberman et al. (2007)</p>
+        </div>
+        <div class="card">
+          <div style="font-size: 2rem; margin-bottom: 12px;">🎯</div>
+          <h3 style="margin-bottom: 8px;">3. You redirect or save</h3>
+          <p style="font-size: 0.95rem; color: #5A5A6E;">If it's impulsive, we offer something else for your brain to do — music, a puzzle, a breathing exercise. Or save it for later and earn Delay Points.</p>
+          <p class="science-note">Offering an alternative dopamine source is evidence-based. Blocking without substituting creates resistance — Volkow et al. (2009)</p>
+        </div>
+      </div>
+      <div class="card" style="margin-top: 36px; max-width: 760px; margin-left: auto; margin-right: auto; text-align: center; padding: 32px;">
+        <p style="font-size: 1.05rem; color: #5A5A6E;">Research shows that desire intensity for impulse purchases drops significantly within 24 hours. Our 'Save for Later' feature is built on exactly this finding.</p>
+        <p class="attribution">Delay discounting literature, MacKillop et al. meta-analysis (2016)</p>
+      </div>
+      <div style="margin-top: 32px;">
+        <a href="#chrome-store" class="btn btn--primary">Add to Chrome free &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: FEATURES ===== -->
+  <section class="section section--cream">
+    <div class="container text-center">
+      <span class="gold-label">What you get</span>
+      <h2>Not a blocker. A better brain tool.</h2>
+      <div class="grid-2x3" style="margin-top: 40px; text-align: left;">
+        <div class="card">
+          <div style="font-size: 1.8rem; margin-bottom: 10px;">⏸</div>
+          <h4>Pause Overlay</h4>
+          <p style="font-size: 0.92rem; color: #5A5A6E;">A non-intrusive card appears at checkout — never blocking you, always respecting your autonomy. You're always in control.</p>
+        </div>
+        <div class="card">
+          <div style="font-size: 1.8rem; margin-bottom: 10px;">🎯</div>
+          <h4>Dopamine Alternatives</h4>
+          <p style="font-size: 0.92rem; color: #5A5A6E;">10 rotating activities that give your brain real stimulation — Spotify, puzzles, breathing, movement. Built on the reward deficit model.</p>
+        </div>
+        <div class="card">
+          <div style="font-size: 1.8rem; margin-bottom: 10px;">💾</div>
+          <h4>Save for Later</h4>
+          <p style="font-size: 0.92rem; color: #5A5A6E;">Store items with one tap. Revisit them tomorrow when the impulse has passed. Most of the time, you won't want them.</p>
+        </div>
+        <div class="card">
+          <div style="font-size: 1.8rem; margin-bottom: 10px;">⭐</div>
+          <h4>Delay Points</h4>
+          <p style="font-size: 0.92rem; color: #5A5A6E;">Earn points for every pause, redirect, and save. Streak rewards for consecutive days. Real behaviour change, properly recognised.</p>
+        </div>
+        <div class="card">
+          <div style="font-size: 1.8rem; margin-bottom: 10px;">⚠️</div>
+          <h4>Dark Pattern Alerts</h4>
+          <p style="font-size: 0.92rem; color: #5A5A6E;">We flag urgency tactics — 'Only 3 left!', countdown timers, 'X people viewing' — and name them for what they are.</p>
+        </div>
+        <div class="card">
+          <div style="font-size: 1.8rem; margin-bottom: 10px;">📊</div>
+          <h4>Your Dashboard</h4>
+          <p style="font-size: 0.92rem; color: #5A5A6E;">See your pauses, saved items, streaks, and money potentially saved — in a visual, ADHD-friendly format.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 5: SOCIAL PROOF ===== -->
+  <section class="section section--teal-tint">
+    <div class="container text-center">
+      <span class="gold-label">Early validation</span>
+      <h2>Built with the community. Validated by research.</h2>
+      <div class="grid-3" style="margin-top: 40px; text-align: left;">
+        <div class="card">
+          <div style="font-size: 2rem; font-weight: 700; color: #2A7D6B; font-family: Georgia, serif; margin-bottom: 8px;">+46 Concept NPS</div>
+          <p style="font-size: 0.92rem; color: #5A5A6E;">Our Wave 1 survey of 50 adults with ADHD returned a concept Net Promoter Score of +46 — strong early signal.</p>
+          <p class="science-note">NPS scale: below 0 = poor, 0–30 = good, 30–70 = great, 70+ = exceptional</p>
+        </div>
+        <div class="card">
+          <div style="font-size: 2rem; font-weight: 700; color: #2A7D6B; font-family: Georgia, serif; margin-bottom: 8px;">44% had already invented their own pause</div>
+          <p style="font-size: 0.92rem; color: #5A5A6E;">Nearly half of our research participants had independently created their own delay tactics before discovering us — proving the need is real.</p>
+        </div>
+        <div class="card">
+          <div style="font-size: 2rem; font-weight: 700; color: #2A7D6B; font-family: Georgia, serif; margin-bottom: 8px;">Built by people with ADHD</div>
+          <p style="font-size: 0.92rem; color: #5A5A6E;">Our founding team has lived experience of ADHD. This isn't a product designed for us from the outside — it's built from the inside.</p>
+        </div>
+      </div>
+
+      <blockquote class="pull-quote">
+        "I just want something that gives me a second to breathe before I spend money I don't have."
+        <cite>— Research participant, Wave 1, February 2026</cite>
+      </blockquote>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 6: PRICING SUMMARY ===== -->
+  <section class="section section--cream">
+    <div class="container text-center">
+      <span class="gold-label">Pricing</span>
+      <h2>Start free. Upgrade when you're ready.</h2>
+      <div class="pricing-grid" style="margin-top: 40px;">
+        <!-- Free -->
+        <div class="pricing-card pricing-card--free">
+          <h3 class="pricing-card__name">Free Forever</h3>
+          <div class="pricing-card__price">&pound;0</div>
+          <ul class="pricing-features">
+            <li>Pause overlay on 20+ sites</li>
+            <li>Purchase classification check-in</li>
+            <li>3 dopamine alternatives per pause</li>
+            <li>Save for later</li>
+            <li>Delay Points + streaks</li>
+            <li>Dark pattern alerts</li>
+            <li>Dashboard — today view</li>
+          </ul>
+          <a href="#chrome-store" class="btn btn--outline" style="width: 100%;">Add to Chrome free &rarr;</a>
+        </div>
+        <!-- Pro -->
+        <div class="pricing-card pricing-card--pro">
+          <span class="pricing-badge">PRO</span>
+          <h3 class="pricing-card__name">Pro</h3>
+          <div class="pricing-card__price">&pound;4.99<span>/month</span></div>
+          <ul class="pricing-features">
+            <li>Everything in Free, plus:</li>
+            <li>Unlimited dopamine alternatives</li>
+            <li>Full spending history + analytics</li>
+            <li>Saved items history (unlimited)</li>
+            <li>Late-night extended pause mode</li>
+            <li>Personalised profile</li>
+            <li>Priority support</li>
+            <li>Early access to mobile app</li>
+          </ul>
+          <a href="pricing.html" class="btn btn--gold" style="width: 100%;">Start 7-day free trial &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 7: MOBILE APP TEASER ===== -->
+  <section class="section section--teal">
+    <div class="container text-center">
+      <span class="gold-label" style="color: #FFFFFF; opacity: 0.8;">Coming soon</span>
+      <h2>Shopping doesn't only happen on a laptop.</h2>
+      <p style="color: rgba(255,255,255,0.8); max-width: 520px; margin: 0 auto 28px;">
+        We're building a mobile companion for in-store and app purchases. Join the waitlist and be first to know.
+      </p>
+      <form class="form-group" action="https://formspree.io/f/PLACEHOLDER" method="POST">
+        <!-- Replace PLACEHOLDER with your Formspree form ID -->
+        <input type="email" name="email" class="form-input" placeholder="your@email.com" required aria-label="Email address">
+        <button type="submit" class="btn btn--gold">Join waitlist</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 8: FINAL CTA ===== -->
+  <section class="section section--cream">
+    <div class="container text-center">
+      <h2>Your next pause could save you &pound;50.</h2>
+      <p style="font-size: 1.1rem; color: #5A5A6E; margin-bottom: 28px;">
+        Add Dopamine Delay to Chrome in 30 seconds. Free forever.
+      </p>
+      <a href="#chrome-store" class="btn btn--primary" style="font-size: 1.1rem; padding: 16px 40px;">Add to Chrome &rarr;</a>
+      <p style="font-size: 0.88rem; color: #8A8A9E; margin-top: 16px;">No account needed. No card required. Just a better pause.</p>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h4>Product</h4>
+          <ul>
+            <li><a href="how-it-works.html">How It Works</a></li>
+            <li><a href="pricing.html">Pricing</a></li>
+            <li><a href="#chrome-store">Add to Chrome</a></li>
+            <li><a href="waitlist.html">Mobile App <span class="coming-soon">(coming soon)</span></a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="about.html">About</a></li>
+            <li><a href="#">Blog <span class="coming-soon">(coming soon)</span></a></li>
+            <li><a href="#">Press</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="privacy.html">Privacy Policy</a></li>
+            <li><a href="terms.html">Terms of Service</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <ul>
+            <li><a href="mailto:hello@dopaminedelay.com">hello@dopaminedelay.com</a></li>
+            <li><a href="https://twitter.com/dopaminedelay" target="_blank" rel="noopener">Twitter/X @dopaminedelay</a></li>
+            <li><a href="https://instagram.com/dopaminedelay" target="_blank" rel="noopener">Instagram @dopaminedelay</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 KailieTech Ltd. Built in Northern Ireland. Designed for ADHD brains.</p>
+        <p class="footer-disclaimer">Dopamine Delay is a productivity tool, not a medical device. It does not provide medical advice.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
