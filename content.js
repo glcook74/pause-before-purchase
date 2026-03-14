@@ -508,10 +508,12 @@
       }
     }, 1000);
 
-    // Alternative tiles
+    // Alternative tiles — +10 points for engaging with a dopamine redirect
     modal.querySelectorAll('.dd-alt-tile').forEach(tile => {
-      tile.addEventListener('click', () => {
+      tile.addEventListener('click', async () => {
         const action = tile.dataset.action;
+        await DDStorage.addPoints(10);
+        showPointsToast('+10 Delay Points — great redirect!');
         if (action === 'external' && tile.dataset.url) {
           window.open(tile.dataset.url, '_blank');
         } else if (action === 'inline' && tile.dataset.detail) {
@@ -546,10 +548,12 @@
           `).join('');
           moreGrid.style.display = 'grid';
           seeMoreBtn.textContent = 'Show fewer';
-          // Attach click handlers to new tiles
+          // Attach click handlers to new tiles — +10 points for redirect
           moreGrid.querySelectorAll('.dd-alt-tile').forEach(tile => {
-            tile.addEventListener('click', () => {
+            tile.addEventListener('click', async () => {
               const action = tile.dataset.action;
+              await DDStorage.addPoints(10);
+              showPointsToast('+10 Delay Points — great redirect!');
               if (action === 'external' && tile.dataset.url) {
                 window.open(tile.dataset.url, '_blank');
               } else if (action === 'inline' && tile.dataset.detail) {
