@@ -2,103 +2,135 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=320">
   <title>Dopamine Delay</title>
-  <link rel="stylesheet" href="popup.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 320px;
+      min-height: 200px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #faf9f6;
+      color: #1a1a1a;
+    }
+
+    /* Sign-in screen */
+    #auth-screen {
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    #auth-screen h2 {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a1a;
+      text-align: center;
+    }
+    #auth-screen input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid #d4d4d4;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    #auth-screen input:focus {
+      border-color: #2ba5a5;
+    }
+    #auth-error {
+      color: #d94848;
+      font-size: 12px;
+      text-align: center;
+      display: none;
+    }
+    .btn-signin {
+      width: 100%;
+      padding: 11px;
+      background: #2ba5a5;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-signin:hover { background: #249090; }
+    .btn-signin:disabled { opacity: 0.6; cursor: not-allowed; }
+    .auth-links {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .auth-links a {
+      font-size: 12px;
+      color: #2ba5a5;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .auth-links a:hover { text-decoration: underline; }
+    .auth-links .muted {
+      color: #999;
+    }
+
+    /* Main extension content (your existing popup content goes here) */
+    #main-screen {
+      display: none;
+    }
+    .signed-in-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 16px;
+      background: #f0f0f0;
+      font-size: 11px;
+      color: #666;
+    }
+    .signed-in-bar a {
+      color: #d94848;
+      text-decoration: none;
+      cursor: pointer;
+      font-size: 11px;
+    }
+    .signed-in-bar a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
-  <div class="dd-popup">
-    <!-- Header -->
-    <header class="dd-header">
-      <div class="dd-logo">
-        <span class="dd-logo-icon">⏸</span>
-        <div>
-          <h1 class="dd-brand">Dopamine Delay</h1>
-          <p class="dd-tagline">Your pause companion</p>
-        </div>
-      </div>
-      <div class="dd-points-badge" id="dd-total-points">0 pts</div>
-    </header>
 
-    <!-- Tabs -->
-    <nav class="dd-tabs">
-      <button class="dd-tab active" data-tab="today">Today</button>
-      <button class="dd-tab" data-tab="saved">Saved</button>
-      <button class="dd-tab" data-tab="settings">Settings</button>
-    </nav>
-
-    <!-- Tab: Today -->
-    <section class="dd-tab-content active" id="tab-today">
-      <div class="dd-stats-grid">
-        <div class="dd-stat-card">
-          <span class="dd-stat-num" id="stat-pauses">0</span>
-          <span class="dd-stat-label">Pauses today</span>
-        </div>
-        <div class="dd-stat-card dd-stat-gold">
-          <span class="dd-stat-num" id="stat-points">0</span>
-          <span class="dd-stat-label">Points today</span>
-        </div>
-        <div class="dd-stat-card dd-stat-teal">
-          <span class="dd-stat-num" id="stat-saved-money">£0</span>
-          <span class="dd-stat-label">Potentially saved</span>
-        </div>
-        <div class="dd-stat-card">
-          <span class="dd-stat-num" id="stat-streak">0</span>
-          <span class="dd-stat-label">Day streak 🔥</span>
-        </div>
-      </div>
-      <p class="dd-encouragement" id="dd-encouragement">Every pause is a win.</p>
-    </section>
-
-    <!-- Tab: Saved for Later -->
-    <section class="dd-tab-content" id="tab-saved">
-      <div id="saved-list" class="dd-saved-list">
-        <p class="dd-empty-state">No saved items yet. When you pause and save, they'll appear here.</p>
-      </div>
-    </section>
-
-    <!-- Tab: Settings -->
-    <section class="dd-tab-content" id="tab-settings">
-      <div class="dd-setting-group">
-        <div class="dd-setting-row">
-          <label>Pause duration</label>
-          <select id="setting-pause-duration">
-            <option value="10">10 seconds</option>
-            <option value="30">30 seconds</option>
-            <option value="60">60 seconds</option>
-          </select>
-        </div>
-
-        <div class="dd-setting-row">
-          <label>Late-night mode (extended pause after 9pm)</label>
-          <label class="dd-toggle">
-            <input type="checkbox" id="setting-late-night" checked>
-            <span class="dd-toggle-slider"></span>
-          </label>
-        </div>
-
-        <div class="dd-setting-row">
-          <label>Theme</label>
-          <select id="setting-theme">
-            <option value="cream">Cream / Teal</option>
-            <option value="dark">Dark mode</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="dd-setting-group">
-        <h3 class="dd-setting-heading">Site controls</h3>
-        <p class="dd-setting-note">Dopamine Delay runs on checkout pages of major UK shopping sites. Visit a site and it will appear here.</p>
-        <div id="site-toggles" class="dd-site-toggles"></div>
-      </div>
-    </section>
-
-    <footer class="dd-footer">
-      <p>Working with your brain, not against it.</p>
-    </footer>
+  <!-- Auth screen: shown when no session -->
+  <div id="auth-screen">
+    <h2>Sign in to sync your points</h2>
+    <input type="email" id="auth-email" placeholder="Email" autocomplete="email" />
+    <input type="password" id="auth-password" placeholder="Password" autocomplete="current-password" />
+    <p id="auth-error"></p>
+    <button class="btn-signin" id="btn-signin">Sign in</button>
+    <div class="auth-links">
+      <a id="link-signup">Create account</a>
+      <a id="link-skip" class="muted">Use without account</a>
+    </div>
   </div>
 
-  <script src="lib/storage.js"></script>
+  <!-- Main screen: shown when signed in or skipped -->
+  <div id="main-screen">
+    <div class="signed-in-bar" id="signed-in-bar" style="display:none;">
+      <span id="user-email"></span>
+      <a id="link-signout">Sign out</a>
+    </div>
+    <!-- 
+      Your existing popup content goes below this line.
+      The extension's normal UI (points display, pause history, etc.)
+      should be placed here or loaded dynamically.
+    -->
+    <div style="padding: 20px; text-align: center; color: #666; font-size: 13px;">
+      Extension content loads here
+    </div>
+  </div>
+
+  <script src="supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
