@@ -62,12 +62,14 @@
 
     // Check if this is a checkout page
     if (isCheckoutPage()) {
+      console.log('DD: Overlay triggered on ' + window.location.href);
       showOverlay();
     }
 
     // Also listen for messages from background script
     chrome.runtime.onMessage.addListener((message) => {
       if (message.type === 'DD_CHECKOUT_DETECTED' && !overlayActive) {
+        console.log('DD: Overlay triggered on ' + window.location.href);
         showOverlay();
       }
     });
