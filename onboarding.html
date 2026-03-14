@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to Dopamine Delay</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #F5F0E8;
+      color: #2A3A35;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ob-container {
+      max-width: 520px;
+      width: 90%;
+      padding: 40px;
+    }
+
+    .ob-screen {
+      display: none;
+      text-align: center;
+      animation: ob-fade-in 0.4s ease-out;
+    }
+
+    .ob-screen.active {
+      display: block;
+    }
+
+    @keyframes ob-fade-in {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .ob-icon {
+      font-size: 56px;
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    .ob-heading {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: #2A3A35;
+      margin-bottom: 12px;
+    }
+
+    .ob-text {
+      font-size: 16px;
+      color: #6B6459;
+      line-height: 1.7;
+      margin-bottom: 28px;
+    }
+
+    .ob-steps {
+      display: flex;
+      gap: 20px;
+      margin: 28px 0;
+      text-align: center;
+    }
+
+    .ob-step {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(42, 125, 107, 0.12);
+      border-radius: 14px;
+      padding: 20px 14px;
+    }
+
+    .ob-step-icon {
+      font-size: 32px;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .ob-step-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #2A7D6B;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .ob-step-desc {
+      font-size: 11px;
+      color: #8B8578;
+    }
+
+    /* Profile options */
+    .ob-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .ob-option {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.7);
+      border: 2px solid rgba(42, 125, 107, 0.15);
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+      font-family: inherit;
+      font-size: 14px;
+      color: #2A3A35;
+      width: 100%;
+    }
+
+    .ob-option:hover {
+      border-color: #2A7D6B;
+      background: rgba(42, 125, 107, 0.06);
+    }
+
+    .ob-option.selected {
+      border-color: #2A7D6B;
+      background: rgba(42, 125, 107, 0.1);
+    }
+
+    .ob-option-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    /* Buttons */
+    .ob-btn {
+      display: inline-block;
+      padding: 14px 36px;
+      background: #2A7D6B;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .ob-btn:hover {
+      background: #236B5C;
+      transform: translateY(-1px);
+    }
+
+    .ob-btn:disabled {
+      background: #B0C4BD;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .ob-btn-secondary {
+      background: none;
+      color: #8B8578;
+      font-size: 13px;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      margin-top: 8px;
+      font-family: inherit;
+    }
+
+    .ob-btn-secondary:hover {
+      color: #2A7D6B;
+    }
+
+    /* Progress dots */
+    .ob-progress {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 32px;
+    }
+
+    .ob-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(42, 125, 107, 0.2);
+      transition: all 0.3s;
+    }
+
+    .ob-dot.active {
+      background: #2A7D6B;
+      width: 24px;
+      border-radius: 4px;
+    }
+
+    /* Points celebration */
+    .ob-points {
+      display: inline-block;
+      background: #C9921A;
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-size: 18px;
+      font-weight: 700;
+      margin: 16px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="ob-container">
+    <!-- Screen 1: Welcome -->
+    <div class="ob-screen active" id="screen-1">
+      <span class="ob-icon">⏸️</span>
+      <h1 class="ob-heading">Welcome to Dopamine Delay</h1>
+      <p class="ob-text">
+        A gentle pause companion designed for how your brain actually works.
+        No shaming, no blocking — just a moment to check in with yourself
+        before you buy.
+      </p>
+      <p class="ob-text">
+        Built on neuroscience research into ADHD, dopamine, and impulse control.
+        This tool works <em>with</em> your brain, not against it.
+      </p>
+      <button class="ob-btn" id="btn-next-1">Let's get started</button>
+    </div>
+
+    <!-- Screen 2: How it works -->
+    <div class="ob-screen" id="screen-2">
+      <h1 class="ob-heading">How it works</h1>
+      <p class="ob-text">Three simple steps. You stay in control the whole time.</p>
+      <div class="ob-steps">
+        <div class="ob-step">
+          <span class="ob-step-icon">🛒</span>
+          <span class="ob-step-label">Detect</span>
+          <span class="ob-step-desc">Checkout page noticed</span>
+        </div>
+        <div class="ob-step">
+          <span class="ob-step-icon">⏸️</span>
+          <span class="ob-step-label">Pause</span>
+          <span class="ob-step-desc">Quick check-in with yourself</span>
+        </div>
+        <div class="ob-step">
+          <span class="ob-step-icon">🔄</span>
+          <span class="ob-step-label">Redirect</span>
+          <span class="ob-step-desc">Or save for later</span>
+        </div>
+      </div>
+      <button class="ob-btn" id="btn-next-2">Next</button>
+    </div>
+
+    <!-- Screen 3: Quick question / profile -->
+    <div class="ob-screen" id="screen-3">
+      <h1 class="ob-heading">Quick question</h1>
+      <p class="ob-text">Which best describes you? This helps us show the most helpful alternatives.</p>
+      <div class="ob-options">
+        <button class="ob-option" data-profile="impulsive">
+          <span class="ob-option-icon">⚡</span>
+          <span>I spend impulsively in the moment</span>
+        </button>
+        <button class="ob-option" data-profile="stressed">
+          <span class="ob-option-icon">😮‍💨</span>
+          <span>I spend when I'm stressed or bored</span>
+        </button>
+        <button class="ob-option" data-profile="tracker">
+          <span class="ob-option-icon">🤷</span>
+          <span>I lose track of what I've bought</span>
+        </button>
+      </div>
+      <button class="ob-btn" id="btn-next-3" disabled>Next</button>
+      <br>
+      <button class="ob-btn-secondary" id="btn-skip-3">Skip this step</button>
+    </div>
+
+    <!-- Screen 4: Permissions -->
+    <div class="ob-screen" id="screen-4">
+      <span class="ob-icon">🔒</span>
+      <h1 class="ob-heading">Your data stays with you</h1>
+      <p class="ob-text">
+        Dopamine Delay stores everything locally on your device using Chrome's
+        built-in storage. No accounts, no servers, no data leaves your browser.
+      </p>
+      <p class="ob-text">
+        We need Chrome storage permission to remember your saved items,
+        points, and preferences.
+      </p>
+      <button class="ob-btn" id="btn-next-4">Sounds good</button>
+    </div>
+
+    <!-- Screen 5: You're ready -->
+    <div class="ob-screen" id="screen-5">
+      <span class="ob-icon">🎉</span>
+      <h1 class="ob-heading">You're ready!</h1>
+      <p class="ob-text">Here's a head start on your journey:</p>
+      <div class="ob-points">+50 Welcome Points</div>
+      <p class="ob-text">
+        Next time you visit a checkout page, Dopamine Delay will gently
+        check in. You're always in control — it's your choice every time.
+      </p>
+      <button class="ob-btn" id="btn-finish">Start browsing</button>
+    </div>
+
+    <!-- Progress dots -->
+    <div class="ob-progress">
+      <div class="ob-dot active" data-screen="1"></div>
+      <div class="ob-dot" data-screen="2"></div>
+      <div class="ob-dot" data-screen="3"></div>
+      <div class="ob-dot" data-screen="4"></div>
+      <div class="ob-dot" data-screen="5"></div>
+    </div>
+  </div>
+
+  <script src="lib/storage.js"></script>
+  <script src="onboarding.js"></script>
+</body>
+</html>

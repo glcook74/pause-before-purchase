@@ -1,55 +1,138 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const toggleEnabled = document.getElementById('toggle-enabled');
-  const cooldownTime = document.getElementById('cooldown-time');
-  const plannedCooldown = document.getElementById('planned-cooldown');
-  const resetStats = document.getElementById('reset-stats');
+/**
+ * Dopamine Delay — Popup Dashboard
+ * Three tabs: Today, Saved for Later, Settings
+ */
 
-  // Load settings
-  chrome.storage.sync.get(
-    ['enabled', 'cooldownMinutes', 'plannedCooldownMinutes', 'stats'],
-    (data) => {
-      toggleEnabled.checked = data.enabled !== false;
-      cooldownTime.value = data.cooldownMinutes || '10';
-      plannedCooldown.value = data.plannedCooldownMinutes || '2';
-      updateStatsDisplay(data.stats || {});
-    }
-  );
+document.addEventListener('DOMContentLoaded', async () => {
+  // ===== TAB SWITCHING =====
+  const tabs = document.querySelectorAll('.dd-tab');
+  const tabContents = document.querySelectorAll('.dd-tab-content');
 
-  toggleEnabled.addEventListener('change', () => {
-    chrome.storage.sync.set({ enabled: toggleEnabled.checked });
-  });
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tabContents.forEach(tc => tc.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
 
-  cooldownTime.addEventListener('change', () => {
-    chrome.storage.sync.set({ cooldownMinutes: cooldownTime.value });
-  });
-
-  plannedCooldown.addEventListener('change', () => {
-    chrome.storage.sync.set({ plannedCooldownMinutes: plannedCooldown.value });
-  });
-
-  resetStats.addEventListener('click', () => {
-    const emptyStats = {
-      pausesToday: 0,
-      impulseCaught: 0,
-      proceededCount: 0,
-      lastResetDate: new Date().toDateString(),
-    };
-    chrome.storage.sync.set({ stats: emptyStats }, () => {
-      updateStatsDisplay(emptyStats);
+      // Refresh data when switching tabs
+      if (tab.dataset.tab === 'today') loadTodayTab();
+      if (tab.dataset.tab === 'saved') loadSavedTab();
+      if (tab.dataset.tab === 'settings') loadSettingsTab();
     });
   });
 
-  function updateStatsDisplay(stats) {
-    // Reset daily stats if it's a new day
-    const today = new Date().toDateString();
-    if (stats.lastResetDate !== today) {
-      stats.pausesToday = 0;
-      stats.lastResetDate = today;
-      chrome.storage.sync.set({ stats });
+  // ===== LOAD TODAY TAB =====
+  async function loadTodayTab() {
+    const pauses = await DDStorage.getPausesToday();
+    const points = await DDStorage.getPoints();
+    const streak = await DDStorage.getStreak();
+    const moneySaved = await DDStorage.getMoneySaved();
+
+    document.getElementById('stat-pauses').textContent = pauses.count || 0;
+    document.getElementById('stat-points').textContent = points || 0;
+    document.getElementById('stat-streak').textContent = streak.count || 0;
+    document.getElementById('stat-saved-money').textContent = '£' + moneySaved.toFixed(2);
+    document.getElementById('dd-total-points').textContent = points + ' pts';
+
+    // Encouragement messages
+    const messages = [
+      'Every pause is a win.',
+      'Your prefrontal cortex thanks you.',
+      'Small pauses, big changes.',
+      'You're building a new pattern.',
+      'Awareness is the first step.'
+    ];
+    const count = pauses.count || 0;
+    const msg = count > 0
+      ? messages[Math.min(count - 1, messages.length - 1)]
+      : 'Ready when you are.';
+    document.getElementById('dd-encouragement').textContent = msg;
+  }
+
+  // ===== LOAD SAVED TAB =====
+  async function loadSavedTab() {
+    const items = await DDStorage.getSavedItems();
+    const list = document.getElementById('saved-list');
+
+    if (items.length === 0) {
+      list.innerHTML = '<p class="dd-empty-state">No saved items yet. When you pause and save, they\'ll appear here.</p>';
+      return;
     }
 
-    document.getElementById('pauses-today').textContent = stats.pausesToday || 0;
-    document.getElementById('impulse-caught').textContent = stats.impulseCaught || 0;
-    document.getElementById('proceeded-count').textContent = stats.proceededCount || 0;
+    list.innerHTML = items.map(item => {
+      const date = new Date(item.savedAt);
+      const dateStr = date.toLocaleDateString('en-GB', {
+        day: 'numeric', month: 'short', year: 'numeric'
+      });
+
+      return `
+        <div class="dd-saved-item" data-id="${item.id}">
+          <div class="dd-saved-item-header">
+            <span class="dd-saved-product">${escapeHTML(item.product || 'Unknown item')}</span>
+            <span class="dd-saved-price">${escapeHTML(item.price || '')}</span>
+          </div>
+          <div class="dd-saved-meta">${escapeHTML(item.site)} · Saved ${dateStr}</div>
+          <p class="dd-still-want">Still want it?</p>
+          <div class="dd-saved-actions">
+            <button class="dd-saved-btn dd-saved-btn-buy" data-url="${escapeHTML(item.url || '')}">Yes, buy it now</button>
+            <button class="dd-saved-btn dd-saved-btn-remove" data-id="${item.id}">Remove — I've moved on</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Buy buttons
+    list.querySelectorAll('.dd-saved-btn-buy').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const url = btn.dataset.url;
+        if (url) chrome.tabs.create({ url });
+      });
+    });
+
+    // Remove buttons
+    list.querySelectorAll('.dd-saved-btn-remove').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        await DDStorage.removeSavedItem(id);
+        await DDStorage.addPoints(10);
+        loadSavedTab();
+        loadTodayTab();
+      });
+    });
   }
+
+  // ===== LOAD SETTINGS TAB =====
+  async function loadSettingsTab() {
+    const settings = await DDStorage.getSettings();
+
+    const pauseSelect = document.getElementById('setting-pause-duration');
+    const lateNightToggle = document.getElementById('setting-late-night');
+    const themeSelect = document.getElementById('setting-theme');
+
+    pauseSelect.value = String(settings.pauseDuration);
+    lateNightToggle.checked = settings.lateNightMode !== false;
+    themeSelect.value = settings.theme || 'cream';
+
+    pauseSelect.onchange = async () => {
+      await DDStorage.updateSettings({ pauseDuration: parseInt(pauseSelect.value) });
+    };
+
+    lateNightToggle.onchange = async () => {
+      await DDStorage.updateSettings({ lateNightMode: lateNightToggle.checked });
+    };
+
+    themeSelect.onchange = async () => {
+      await DDStorage.updateSettings({ theme: themeSelect.value });
+    };
+  }
+
+  function escapeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
+  // Initial load
+  loadTodayTab();
 });

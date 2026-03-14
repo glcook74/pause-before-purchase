@@ -3,74 +3,102 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pause Before Purchase</title>
-  <link rel="stylesheet" href="styles/popup.css">
+  <title>Dopamine Delay</title>
+  <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <div class="popup-container">
-    <header>
-      <h1>Pause Before Purchase</h1>
-      <p class="subtitle">Mindful spending companion</p>
+  <div class="dd-popup">
+    <!-- Header -->
+    <header class="dd-header">
+      <div class="dd-logo">
+        <span class="dd-logo-icon">⏸</span>
+        <div>
+          <h1 class="dd-brand">Dopamine Delay</h1>
+          <p class="dd-tagline">Your pause companion</p>
+        </div>
+      </div>
+      <div class="dd-points-badge" id="dd-total-points">0 pts</div>
     </header>
 
-    <section class="stats-section">
-      <h2>Your Progress</h2>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <span class="stat-number" id="pauses-today">0</span>
-          <span class="stat-label">Pauses Today</span>
+    <!-- Tabs -->
+    <nav class="dd-tabs">
+      <button class="dd-tab active" data-tab="today">Today</button>
+      <button class="dd-tab" data-tab="saved">Saved</button>
+      <button class="dd-tab" data-tab="settings">Settings</button>
+    </nav>
+
+    <!-- Tab: Today -->
+    <section class="dd-tab-content active" id="tab-today">
+      <div class="dd-stats-grid">
+        <div class="dd-stat-card">
+          <span class="dd-stat-num" id="stat-pauses">0</span>
+          <span class="dd-stat-label">Pauses today</span>
         </div>
-        <div class="stat-card">
-          <span class="stat-number" id="impulse-caught">0</span>
-          <span class="stat-label">Impulse Catches</span>
+        <div class="dd-stat-card dd-stat-gold">
+          <span class="dd-stat-num" id="stat-points">0</span>
+          <span class="dd-stat-label">Points today</span>
         </div>
-        <div class="stat-card saved">
-          <span class="stat-number" id="proceeded-count">0</span>
-          <span class="stat-label">Proceeded After Reflection</span>
+        <div class="dd-stat-card dd-stat-teal">
+          <span class="dd-stat-num" id="stat-saved-money">£0</span>
+          <span class="dd-stat-label">Potentially saved</span>
         </div>
+        <div class="dd-stat-card">
+          <span class="dd-stat-num" id="stat-streak">0</span>
+          <span class="dd-stat-label">Day streak 🔥</span>
+        </div>
+      </div>
+      <p class="dd-encouragement" id="dd-encouragement">Every pause is a win.</p>
+    </section>
+
+    <!-- Tab: Saved for Later -->
+    <section class="dd-tab-content" id="tab-saved">
+      <div id="saved-list" class="dd-saved-list">
+        <p class="dd-empty-state">No saved items yet. When you pause and save, they'll appear here.</p>
       </div>
     </section>
 
-    <section class="settings-section">
-      <h2>Settings</h2>
+    <!-- Tab: Settings -->
+    <section class="dd-tab-content" id="tab-settings">
+      <div class="dd-setting-group">
+        <div class="dd-setting-row">
+          <label>Pause duration</label>
+          <select id="setting-pause-duration">
+            <option value="10">10 seconds</option>
+            <option value="30">30 seconds</option>
+            <option value="60">60 seconds</option>
+          </select>
+        </div>
 
-      <div class="setting-row">
-        <label for="toggle-enabled">Extension Enabled</label>
-        <label class="toggle">
-          <input type="checkbox" id="toggle-enabled" checked>
-          <span class="toggle-slider"></span>
-        </label>
+        <div class="dd-setting-row">
+          <label>Late-night mode (extended pause after 9pm)</label>
+          <label class="dd-toggle">
+            <input type="checkbox" id="setting-late-night" checked>
+            <span class="dd-toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="dd-setting-row">
+          <label>Theme</label>
+          <select id="setting-theme">
+            <option value="cream">Cream / Teal</option>
+            <option value="dark">Dark mode</option>
+          </select>
+        </div>
       </div>
 
-      <div class="setting-row">
-        <label for="cooldown-time">Impulse Cooldown (minutes)</label>
-        <select id="cooldown-time">
-          <option value="5">5 min</option>
-          <option value="10" selected>10 min</option>
-          <option value="15">15 min</option>
-          <option value="30">30 min</option>
-          <option value="60">1 hour</option>
-          <option value="1440">24 hours</option>
-        </select>
+      <div class="dd-setting-group">
+        <h3 class="dd-setting-heading">Site controls</h3>
+        <p class="dd-setting-note">Dopamine Delay runs on checkout pages of major UK shopping sites. Visit a site and it will appear here.</p>
+        <div id="site-toggles" class="dd-site-toggles"></div>
       </div>
-
-      <div class="setting-row">
-        <label for="planned-cooldown">Planned Purchase Cooldown (minutes)</label>
-        <select id="planned-cooldown">
-          <option value="0">No cooldown</option>
-          <option value="2" selected>2 min</option>
-          <option value="5">5 min</option>
-          <option value="10">10 min</option>
-        </select>
-      </div>
-
-      <button id="reset-stats" class="reset-btn">Reset Stats</button>
     </section>
 
-    <footer>
-      <p>Take a breath. You're in control.</p>
+    <footer class="dd-footer">
+      <p>Working with your brain, not against it.</p>
     </footer>
   </div>
+
+  <script src="lib/storage.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
