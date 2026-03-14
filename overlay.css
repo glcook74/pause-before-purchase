@@ -262,6 +262,19 @@
   margin: 0 !important;
 }
 
+/* ===== PLANNED PURCHASE ACTIONS ===== */
+.dd-planned-actions {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  margin: 0 0 8px 0 !important;
+}
+
+.dd-planned-buy {
+  text-decoration: underline !important;
+  font-size: 14px !important;
+}
+
 /* ===== SCREEN 2: REDIRECT ===== */
 .dd-redirect-section {
   margin: 0 0 20px 0 !important;

@@ -257,13 +257,22 @@
     overlay.querySelectorAll('.dd-choice-card').forEach(card => {
       card.addEventListener('click', async () => {
         const type = card.dataset.type;
-        // +5 points for completing classification
-        await DDStorage.addPoints(5);
 
-        if (type === 'necessary' || type === 'planned') {
-          showAffirmation(overlay);
-          showPointsToast('+5 Delay Points');
+        if (type === 'necessary') {
+          // Points are only awarded for behaviour that demonstrates
+          // genuine pause and redirection. Proceeding with a necessary
+          // purchase requires no intervention — rewarding it would
+          // dilute the meaning of the points system and create
+          // perverse incentives (Jason Lear advisory principle:
+          // reward real behaviour change, not gaming).
+          showAffirmation(overlay, 'Got it — good luck with your purchase.');
+        } else if (type === 'planned') {
+          // Planned: 0 points for classification. Points only awarded
+          // if user saves the item (+15), not if they buy now.
+          showPlannedScreen(overlay, productInfo, settings);
         } else if (type === 'impulsive') {
+          // +5 points for completing the impulsive check-in
+          await DDStorage.addPoints(5);
           showPointsToast('+5 Delay Points');
           showScreen2(overlay, productInfo, settings);
         }
@@ -273,12 +282,13 @@
 
   // ===== AFFIRMATION =====
 
-  function showAffirmation(overlay) {
+  function showAffirmation(overlay, customMessage) {
     const modal = overlay.querySelector('.dd-modal');
+    const message = customMessage || 'Good thinking. You\'ve got this.';
     modal.innerHTML = `
       <div class="dd-affirmation">
         <span class="dd-affirmation-icon">💚</span>
-        <p class="dd-affirmation-text">Good thinking. You've got this.</p>
+        <p class="dd-affirmation-text">${escapeHTML(message)}</p>
         <p class="dd-affirmation-sub">Your choice, always.</p>
       </div>
     `;
@@ -286,6 +296,45 @@
     setTimeout(() => {
       closeOverlay(overlay);
     }, 2500);
+  }
+
+  // ===== SCREEN 2 (PLANNED): SAVE OR BUY =====
+
+  function showPlannedScreen(overlay, productInfo, settings) {
+    const modal = overlay.querySelector('.dd-modal');
+
+    modal.innerHTML = `
+      <button class="dd-close-btn" title="Close" aria-label="Close">&times;</button>
+      <h2 class="dd-heading">Good thinking — you've been here before.</h2>
+      <p class="dd-subheading">Since you've been planning this, do you want to save it to your list to buy at the right moment?</p>
+
+      <div class="dd-planned-actions">
+        <button class="dd-save-btn" id="dd-planned-save">Add to my shopping list</button>
+        <button class="dd-proceed-link dd-planned-buy" id="dd-planned-buy">Buy it now — I'm ready</button>
+      </div>
+    `;
+
+    modal.querySelector('.dd-close-btn').addEventListener('click', () => {
+      closeOverlay(overlay);
+    });
+
+    document.getElementById('dd-planned-save').addEventListener('click', async () => {
+      await DDStorage.saveItem({
+        product: productInfo.product,
+        site: productInfo.site,
+        price: productInfo.price,
+        url: window.location.href,
+        type: 'planned'
+      });
+      await DDStorage.addPoints(15);
+      showPointsToast('Added to your list! +15 Delay Points ⭐');
+      closeOverlay(overlay);
+    });
+
+    document.getElementById('dd-planned-buy').addEventListener('click', () => {
+      // 0 points — buying a planned purchase is fine but not rewarded
+      closeOverlay(overlay);
+    });
   }
 
   // ===== SCREEN 2: REDIRECT THAT ENERGY =====
