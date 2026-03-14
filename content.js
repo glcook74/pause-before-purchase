@@ -1,165 +1,251 @@
 /**
- * Pause Before Purchase - Content Script
- * Detects purchase/checkout buttons and intercepts clicks with a reflection prompt.
+ * Dopamine Delay — Content Script
+ * Detects checkout/payment pages and injects the pause overlay.
+ * Grounded in dopamine reward deficit model (Volkow et al., 2009),
+ * delay discounting research, and inhibitory control evidence.
  */
 
 (function () {
   'use strict';
 
-  // Purchase button detection patterns
-  const PURCHASE_PATTERNS = [
-    /buy\s*now/i,
-    /place\s*(your\s*)?order/i,
-    /complete\s*(your\s*)?(purchase|order|checkout)/i,
-    /checkout/i,
-    /pay\s*now/i,
-    /submit\s*order/i,
-    /confirm\s*(and\s*)?(pay|purchase|order)/i,
-    /proceed\s*to\s*(checkout|payment)/i,
-    /add\s*to\s*cart/i,
-    /purchase/i,
-    /order\s*now/i,
+  // ===== CHECKOUT DETECTION =====
+
+  const CHECKOUT_URL_PATTERNS = [
+    /\/checkout/i, /\/basket/i, /\/cart/i, /\/payment/i,
+    /\/order-confirm/i, /\/buy-now/i, /\/order.*confirm/i, /\/pay\b/i
   ];
 
-  // Selectors commonly used for purchase buttons
-  const PURCHASE_SELECTORS = [
-    '[id*="buy" i]',
-    '[id*="checkout" i]',
-    '[id*="purchase" i]',
-    '[id*="place-order" i]',
-    '[id*="placeOrder" i]',
-    '[class*="buy-now" i]',
-    '[class*="checkout" i]',
-    '[class*="purchase" i]',
-    '[data-action*="buy" i]',
-    '[data-action*="checkout" i]',
-    '[name*="checkout" i]',
-    '#submitOrderButtonId',
-    '#placeYourOrder',
-    '.a-button-input[name="placeYourOrder1"]',
+  const SHOPPING_DOMAINS = [
+    'amazon.co.uk', 'asos.com', 'ebay.co.uk', 'argos.co.uk',
+    'tesco.com', 'boots.com', 'johnlewis.com', 'currys.co.uk',
+    'shein.co.uk', 'shein.com', 'klarna.com'
   ];
 
-  const REFLECTION_PROMPTS = [
-    'Will this still feel like a good decision tomorrow morning?',
-    'Can you name three specific times you will use this in the next month?',
-    'What would you tell a friend who was about to make this purchase?',
-    'Is this solving a real problem, or filling an emotional need?',
-    'If you had to walk to a store to buy this, would you still go?',
-    'What else could you do with this money that matters to you?',
-    'Are you buying this for who you are, or who you wish you were?',
-    'Would you still want this if no one else could see it?',
-    'Have you looked for this item secondhand or on sale?',
-    'If you wait a week, will you still remember wanting this?',
+  const DARK_PATTERN_PHRASES = [
+    /only \d+ left/i, /ends in/i, /flash sale/i, /limited time/i,
+    /selling fast/i, /just \d+ people? viewing/i, /hurry/i,
+    /don't miss out/i, /last chance/i, /almost gone/i,
+    /order within/i, /low stock/i
   ];
 
   let overlayActive = false;
-  let currentCooldown = null;
+  let timerInterval = null;
 
-  function isPurchaseButton(element) {
-    if (!element) return false;
+  // ===== INITIALISATION =====
 
-    const text = (element.textContent || '').trim();
-    const ariaLabel = (element.getAttribute('aria-label') || '').trim();
-    const value = (element.getAttribute('value') || '').trim();
-    const title = (element.getAttribute('title') || '').trim();
+  async function init() {
+    // Check if onboarded
+    const onboarded = await DDStorage.isOnboarded();
+    if (!onboarded) return;
 
-    const combinedText = `${text} ${ariaLabel} ${value} ${title}`;
+    // Check if this site is disabled
+    const hostname = window.location.hostname.replace(/^www\./, '');
+    const disabledSites = await DDStorage.getDisabledSites();
+    if (disabledSites.includes(hostname)) return;
 
-    // Check text content against patterns
-    for (const pattern of PURCHASE_PATTERNS) {
-      if (pattern.test(combinedText)) return true;
+    // Check if this is a checkout page
+    if (isCheckoutPage()) {
+      showOverlay();
     }
 
-    // Check if element matches purchase selectors
-    for (const selector of PURCHASE_SELECTORS) {
-      try {
-        if (element.matches(selector)) return true;
-      } catch {
-        // Invalid selector, skip
+    // Also listen for messages from background script
+    chrome.runtime.onMessage.addListener((message) => {
+      if (message.type === 'DD_CHECKOUT_DETECTED' && !overlayActive) {
+        showOverlay();
+      }
+    });
+  }
+
+  function isCheckoutPage() {
+    const url = window.location.href;
+    const hostname = window.location.hostname.replace(/^www\./, '');
+
+    const isShoppingSite = SHOPPING_DOMAINS.some(domain =>
+      hostname === domain || hostname.endsWith('.' + domain)
+    );
+
+    const hasCheckoutPath = CHECKOUT_URL_PATTERNS.some(pattern =>
+      pattern.test(window.location.pathname)
+    );
+
+    return isShoppingSite || hasCheckoutPath;
+  }
+
+  // ===== PRODUCT EXTRACTION =====
+
+  function extractProductInfo() {
+    const info = {
+      product: '',
+      price: '',
+      site: window.location.hostname.replace(/^www\./, '')
+    };
+
+    // Try common product name selectors
+    const productSelectors = [
+      '#productTitle',                           // Amazon
+      'h1[data-test-id="product-title"]',        // ASOS
+      '.product-title h1', '.product-title',     // Generic
+      'h1.product-name', '.product-name h1',
+      '[data-testid="product-title"]',
+      '.item-title', '#itemTitle',               // eBay
+      'h1[itemprop="name"]',
+      '.product-details h1',
+      'h1'
+    ];
+
+    for (const selector of productSelectors) {
+      const el = document.querySelector(selector);
+      if (el && el.textContent.trim().length > 2 && el.textContent.trim().length < 200) {
+        info.product = el.textContent.trim().substring(0, 100);
+        break;
       }
     }
 
-    return false;
+    // Try common price selectors
+    const priceSelectors = [
+      '.a-price .a-offscreen',                   // Amazon
+      '[data-test-id="current-price"]',          // ASOS
+      '.current-price', '.product-price',
+      '#prcIsum', '.display-price',              // eBay
+      '[itemprop="price"]',
+      '.price-current', '.sale-price',
+      '.product-price-amount',
+      '.price'
+    ];
+
+    for (const selector of priceSelectors) {
+      const el = document.querySelector(selector);
+      if (el) {
+        const text = el.textContent.trim();
+        const priceMatch = text.match(/[£$€]\s*[\d,.]+/);
+        if (priceMatch) {
+          info.price = priceMatch[0];
+          break;
+        }
+      }
+    }
+
+    return info;
   }
 
-  function getRandomPrompt() {
-    return REFLECTION_PROMPTS[Math.floor(Math.random() * REFLECTION_PROMPTS.length)];
+  // ===== DARK PATTERN DETECTION =====
+
+  function detectDarkPatterns() {
+    const bodyText = document.body.innerText || '';
+    const detected = [];
+
+    for (const pattern of DARK_PATTERN_PHRASES) {
+      const match = bodyText.match(pattern);
+      if (match) {
+        detected.push(match[0]);
+      }
+    }
+
+    return detected;
   }
 
-  function formatTime(seconds) {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  // ===== POINTS TOAST =====
+
+  function showPointsToast(message) {
+    // Remove any existing toast
+    const existing = document.querySelector('.dd-points-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'dd-points-toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      if (toast.parentNode) toast.remove();
+    }, 3000);
   }
 
-  function createChoiceOverlay(originalEvent, originalElement) {
+  // ===== SCREEN 1: BEFORE YOU BUY =====
+
+  async function showOverlay() {
     if (overlayActive) return;
     overlayActive = true;
 
+    const productInfo = extractProductInfo();
+    const darkPatterns = detectDarkPatterns();
+    const settings = await DDStorage.getSettings();
+
+    // Record pause
+    await DDStorage.incrementPausesToday();
+    await DDStorage.recordPauseForStreak();
+
     const overlay = document.createElement('div');
-    overlay.className = 'pbp-overlay';
+    overlay.className = 'dd-overlay';
+    if (settings.theme === 'dark') {
+      overlay.classList.add('dd-dark');
+    }
+
+    let darkPatternHTML = '';
+    if (darkPatterns.length > 0) {
+      darkPatternHTML = `
+        <div class="dd-dark-pattern-banner">
+          <strong>Heads up:</strong> this page is using urgency tactics. You have more time than it seems.
+        </div>
+      `;
+    }
+
+    let purchaseInfoHTML = '';
+    if (productInfo.site || productInfo.product || productInfo.price) {
+      purchaseInfoHTML = `
+        <div class="dd-purchase-info">
+          ${productInfo.site ? `<div class="dd-purchase-site">${escapeHTML(productInfo.site)}</div>` : ''}
+          ${productInfo.product ? `<div class="dd-purchase-product">${escapeHTML(productInfo.product)}</div>` : ''}
+          ${productInfo.price ? `<div class="dd-purchase-price">${escapeHTML(productInfo.price)}</div>` : ''}
+        </div>
+      `;
+    }
+
     overlay.innerHTML = `
-      <div class="pbp-modal">
-        <div class="pbp-header">
-          <span class="pbp-icon" aria-hidden="true">&#9208;</span>
-          <h2 class="pbp-title">Let's pause for a moment</h2>
-          <p class="pbp-subtitle">Take a breath. No judgment — just a quick check-in with yourself.</p>
+      <div class="dd-modal">
+        <button class="dd-close-btn" title="Close" aria-label="Close">&times;</button>
+        ${darkPatternHTML}
+        <h2 class="dd-heading">Before you buy</h2>
+        ${purchaseInfoHTML}
+        <p class="dd-question">Quick check — what kind of purchase is this?</p>
+        <div class="dd-choices">
+          <button class="dd-choice-card" data-type="necessary">
+            <span class="dd-choice-icon">✅</span>
+            <span class="dd-choice-content">
+              <span class="dd-choice-label">NECESSARY</span>
+              <span class="dd-choice-desc">I genuinely need this</span>
+            </span>
+          </button>
+          <button class="dd-choice-card" data-type="planned">
+            <span class="dd-choice-icon">📋</span>
+            <span class="dd-choice-content">
+              <span class="dd-choice-label">PLANNED</span>
+              <span class="dd-choice-desc">I've been thinking about this for a while</span>
+            </span>
+          </button>
+          <button class="dd-choice-card" data-type="impulsive">
+            <span class="dd-choice-icon">⚡</span>
+            <span class="dd-choice-content">
+              <span class="dd-choice-label">IMPULSIVE</span>
+              <span class="dd-choice-desc">I just want it right now</span>
+            </span>
+          </button>
         </div>
-        <p class="pbp-question">What kind of purchase is this?</p>
-        <div class="pbp-choices">
-          <button class="pbp-choice-btn" data-type="necessary">
-            <span class="pbp-choice-icon" aria-hidden="true">&#9989;</span>
-            <span class="pbp-choice-text">
-              <span class="pbp-choice-label">Necessary</span>
-              <span class="pbp-choice-desc">Something I genuinely need — groceries, bills, medicine, etc.</span>
-            </span>
-          </button>
-          <button class="pbp-choice-btn" data-type="planned">
-            <span class="pbp-choice-icon" aria-hidden="true">&#128203;</span>
-            <span class="pbp-choice-text">
-              <span class="pbp-choice-label">Planned</span>
-              <span class="pbp-choice-desc">I've been thinking about this for a while and budgeted for it.</span>
-            </span>
-          </button>
-          <button class="pbp-choice-btn" data-type="impulse">
-            <span class="pbp-choice-icon" aria-hidden="true">&#9889;</span>
-            <span class="pbp-choice-text">
-              <span class="pbp-choice-label">Impulse</span>
-              <span class="pbp-choice-desc">I just saw it and want it right now. I hadn't planned on this.</span>
-            </span>
-          </button>
-        </div>
-        <button class="pbp-btn pbp-btn-skip">I'd rather not answer — let me through</button>
+        <p class="dd-honesty">Be honest — it helps.</p>
       </div>
     `;
 
     document.body.appendChild(overlay);
 
-    // Prevent scrolling
-    document.body.style.overflow = 'hidden';
-
-    // Handle choices
-    overlay.querySelectorAll('.pbp-choice-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const type = btn.dataset.type;
-        handleChoice(type, overlay, originalElement);
-      });
-    });
-
-    // Skip button
-    overlay.querySelector('.pbp-btn-skip').addEventListener('click', () => {
+    // Event handlers
+    overlay.querySelector('.dd-close-btn').addEventListener('click', () => {
       closeOverlay(overlay);
-      proceedWithPurchase(originalElement);
     });
 
-    // Close on overlay background click
     overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) {
-        closeOverlay(overlay);
-      }
+      if (e.target === overlay) closeOverlay(overlay);
     });
 
-    // Close on Escape
     const escHandler = (e) => {
       if (e.key === 'Escape') {
         closeOverlay(overlay);
@@ -168,248 +254,169 @@
     };
     document.addEventListener('keydown', escHandler);
 
-    // Update stats
-    updateStats('pause');
-  }
+    overlay.querySelectorAll('.dd-choice-card').forEach(card => {
+      card.addEventListener('click', async () => {
+        const type = card.dataset.type;
+        // +5 points for completing classification
+        await DDStorage.addPoints(5);
 
-  function handleChoice(type, overlay, originalElement) {
-    chrome.storage.sync.get(
-      ['cooldownMinutes', 'plannedCooldownMinutes'],
-      (data) => {
-        const impulseCooldown = parseInt(data.cooldownMinutes || '10', 10);
-        const plannedCooldown = parseInt(data.plannedCooldownMinutes || '2', 10);
-
-        switch (type) {
-          case 'necessary':
-            // Let them through with a brief affirmation
-            showAffirmation(overlay, originalElement);
-            break;
-
-          case 'planned':
-            if (plannedCooldown > 0) {
-              showCooldown(overlay, originalElement, plannedCooldown, 'planned');
-            } else {
-              showAffirmation(overlay, originalElement);
-            }
-            break;
-
-          case 'impulse':
-            updateStats('impulse');
-            showCooldown(overlay, originalElement, impulseCooldown, 'impulse');
-            break;
+        if (type === 'necessary' || type === 'planned') {
+          showAffirmation(overlay);
+          showPointsToast('+5 Delay Points');
+        } else if (type === 'impulsive') {
+          showPointsToast('+5 Delay Points');
+          showScreen2(overlay, productInfo, settings);
         }
-      }
-    );
-  }
-
-  function showAffirmation(overlay, originalElement) {
-    const modal = overlay.querySelector('.pbp-modal');
-    modal.innerHTML = `
-      <span class="pbp-icon" aria-hidden="true">&#128154;</span>
-      <h2 class="pbp-title">Sounds good!</h2>
-      <p class="pbp-subtitle">Thanks for checking in with yourself. Go ahead.</p>
-      <div class="pbp-btn-row">
-        <button class="pbp-btn pbp-btn-proceed">Continue to purchase</button>
-      </div>
-    `;
-
-    modal.querySelector('.pbp-btn-proceed').addEventListener('click', () => {
-      updateStats('proceed');
-      closeOverlay(overlay);
-      proceedWithPurchase(originalElement);
+      });
     });
   }
 
-  function showCooldown(overlay, originalElement, minutes, type) {
-    const totalSeconds = minutes * 60;
-    let remaining = totalSeconds;
-    const prompt = getRandomPrompt();
+  // ===== AFFIRMATION =====
 
-    const isImpulse = type === 'impulse';
-    const title = isImpulse
-      ? "Let's take a breather"
-      : 'Quick pause for reflection';
-    const message = isImpulse
-      ? "This looks like an impulse purchase. That's completely okay — let's just give it a moment. Use this time to check in with yourself."
-      : "You've planned this one. Just a short moment to make sure it still feels right.";
-
-    const modal = overlay.querySelector('.pbp-modal');
+  function showAffirmation(overlay) {
+    const modal = overlay.querySelector('.dd-modal');
     modal.innerHTML = `
-      <div class="pbp-cooldown">
-        <span class="pbp-cooldown-icon" aria-hidden="true">${isImpulse ? '&#9200;' : '&#128173;'}</span>
-        <h2 class="pbp-cooldown-title">${title}</h2>
-        <p class="pbp-cooldown-message">${message}</p>
-        <p class="pbp-breathe-text">Breathe in... breathe out...</p>
-        <p class="pbp-timer">${formatTime(remaining)}</p>
-        <p class="pbp-timer-label">remaining</p>
-        <div class="pbp-progress-bar">
-          <div class="pbp-progress-fill" style="width: 0%"></div>
-        </div>
-        <div class="pbp-reflection-prompt">
-          <p>${prompt}</p>
-        </div>
-        <div class="pbp-btn-row">
-          <button class="pbp-btn pbp-btn-cancel">I don't need this</button>
-          <button class="pbp-btn pbp-btn-proceed" disabled>Wait for timer...</button>
-        </div>
+      <div class="dd-affirmation">
+        <span class="dd-affirmation-icon">💚</span>
+        <p class="dd-affirmation-text">Good thinking. You've got this.</p>
+        <p class="dd-affirmation-sub">Your choice, always.</p>
       </div>
     `;
 
-    const timerEl = modal.querySelector('.pbp-timer');
-    const progressFill = modal.querySelector('.pbp-progress-fill');
-    const proceedBtn = modal.querySelector('.pbp-btn-proceed');
-    const cancelBtn = modal.querySelector('.pbp-btn-cancel');
+    setTimeout(() => {
+      closeOverlay(overlay);
+    }, 2500);
+  }
 
-    currentCooldown = setInterval(() => {
+  // ===== SCREEN 2: REDIRECT THAT ENERGY =====
+
+  async function showScreen2(overlay, productInfo, settings) {
+    const modal = overlay.querySelector('.dd-modal');
+    const profile = await DDStorage.getProfile();
+    const alternatives = DDAlternatives.getAlternatives(4, profile);
+    const pauseDuration = await DDStorage.getEffectivePauseDuration(productInfo.price);
+
+    let remaining = pauseDuration;
+
+    const altTilesHTML = alternatives.map(alt => `
+      <button class="dd-alt-tile" data-id="${alt.id}" data-action="${alt.action}" ${alt.url ? `data-url="${alt.url}"` : ''} ${alt.detail ? `data-detail="${escapeHTML(alt.detail)}"` : ''}>
+        <span class="dd-alt-icon">${alt.icon}</span>
+        <span class="dd-alt-category">${alt.category}</span>
+        <span class="dd-alt-label">${alt.label}</span>
+      </button>
+    `).join('');
+
+    modal.innerHTML = `
+      <button class="dd-close-btn" title="Close" aria-label="Close">&times;</button>
+      <h2 class="dd-heading">Let's redirect that energy</h2>
+      <p class="dd-subheading">Your brain wants dopamine. Here are some ways to get it without spending.</p>
+
+      <div class="dd-alternatives-grid">
+        ${altTilesHTML}
+      </div>
+
+      <div id="dd-alt-detail" class="dd-detail-box" style="display: none !important;"></div>
+
+      <div class="dd-timer-section">
+        <p class="dd-breathe-text">Breathe in... breathe out...</p>
+        <p class="dd-timer-display" id="dd-timer">${remaining}</p>
+        <p class="dd-timer-label">seconds remaining</p>
+        <div class="dd-progress-bar">
+          <div class="dd-progress-fill" id="dd-progress"></div>
+        </div>
+      </div>
+
+      <button class="dd-save-btn" id="dd-save-btn">Save for later</button>
+      <button class="dd-proceed-link" id="dd-proceed" disabled>Wait for pause to finish...</button>
+    `;
+
+    // Close button
+    modal.querySelector('.dd-close-btn').addEventListener('click', () => {
+      closeOverlay(overlay);
+    });
+
+    // Timer
+    const timerEl = document.getElementById('dd-timer');
+    const progressEl = document.getElementById('dd-progress');
+    const proceedBtn = document.getElementById('dd-proceed');
+
+    timerInterval = setInterval(() => {
       remaining--;
-      timerEl.textContent = formatTime(remaining);
-      const progress = ((totalSeconds - remaining) / totalSeconds) * 100;
-      progressFill.style.width = progress + '%';
-
-      // Rotate reflection prompts
-      if (remaining > 0 && remaining % 30 === 0) {
-        const promptEl = modal.querySelector('.pbp-reflection-prompt p');
-        if (promptEl) promptEl.textContent = getRandomPrompt();
+      if (timerEl) timerEl.textContent = remaining;
+      if (progressEl) {
+        const pct = ((pauseDuration - remaining) / pauseDuration) * 100;
+        progressEl.style.width = pct + '%';
       }
-
       if (remaining <= 0) {
-        clearInterval(currentCooldown);
-        currentCooldown = null;
-        proceedBtn.disabled = false;
-        proceedBtn.textContent = 'I still want this — proceed';
-        timerEl.textContent = 'Time is up!';
+        clearInterval(timerInterval);
+        timerInterval = null;
+        if (timerEl) timerEl.textContent = '0';
+        if (proceedBtn) {
+          proceedBtn.disabled = false;
+          proceedBtn.textContent = 'Continue to purchase — your choice';
+          proceedBtn.style.color = '#6B6459';
+        }
       }
     }, 1000);
 
-    proceedBtn.addEventListener('click', () => {
-      if (!proceedBtn.disabled) {
-        updateStats('proceed');
-        cleanupCooldown();
-        closeOverlay(overlay);
-        proceedWithPurchase(originalElement);
-      }
+    // Alternative tiles
+    modal.querySelectorAll('.dd-alt-tile').forEach(tile => {
+      tile.addEventListener('click', () => {
+        const action = tile.dataset.action;
+        if (action === 'external' && tile.dataset.url) {
+          window.open(tile.dataset.url, '_blank');
+        } else if (action === 'inline' && tile.dataset.detail) {
+          const detailBox = document.getElementById('dd-alt-detail');
+          if (detailBox) {
+            detailBox.textContent = tile.dataset.detail;
+            detailBox.style.display = 'block';
+          }
+        }
+      });
     });
 
-    cancelBtn.addEventListener('click', () => {
-      cleanupCooldown();
+    // Save for later
+    document.getElementById('dd-save-btn').addEventListener('click', async () => {
+      await DDStorage.saveItem({
+        product: productInfo.product,
+        site: productInfo.site,
+        price: productInfo.price,
+        url: window.location.href
+      });
+      await DDStorage.addPoints(15);
+      showPointsToast('+15 Delay Points — brilliant pause!');
       closeOverlay(overlay);
     });
+
+    // Proceed button
+    proceedBtn.addEventListener('click', () => {
+      if (!proceedBtn.disabled) {
+        closeOverlay(overlay);
+      }
+    });
   }
 
-  function cleanupCooldown() {
-    if (currentCooldown) {
-      clearInterval(currentCooldown);
-      currentCooldown = null;
-    }
-  }
+  // ===== HELPERS =====
 
   function closeOverlay(overlay) {
     overlayActive = false;
-    document.body.style.overflow = '';
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
     if (overlay && overlay.parentNode) {
       overlay.parentNode.removeChild(overlay);
     }
   }
 
-  function proceedWithPurchase(element) {
-    if (element) {
-      // Temporarily mark to avoid re-interception
-      element.dataset.pbpAllowed = 'true';
-      element.click();
-      // Clean up after a short delay
-      setTimeout(() => {
-        delete element.dataset.pbpAllowed;
-      }, 1000);
-    }
+  function escapeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
   }
 
-  function updateStats(action) {
-    chrome.storage.sync.get(['stats'], (data) => {
-      const stats = data.stats || {
-        pausesToday: 0,
-        impulseCaught: 0,
-        proceededCount: 0,
-        lastResetDate: new Date().toDateString(),
-      };
+  // ===== START =====
 
-      // Reset daily counter if new day
-      const today = new Date().toDateString();
-      if (stats.lastResetDate !== today) {
-        stats.pausesToday = 0;
-        stats.lastResetDate = today;
-      }
-
-      switch (action) {
-        case 'pause':
-          stats.pausesToday++;
-          break;
-        case 'impulse':
-          stats.impulseCaught++;
-          break;
-        case 'proceed':
-          stats.proceededCount++;
-          break;
-      }
-
-      chrome.storage.sync.set({ stats });
-    });
-  }
-
-  function interceptClicks(event) {
-    // Check if extension is pausing
-    if (overlayActive) return;
-
-    const target = event.target;
-    if (!target) return;
-
-    // Skip if explicitly allowed through
-    if (target.dataset && target.dataset.pbpAllowed === 'true') return;
-
-    // Walk up the DOM tree to find the actual button
-    let element = target;
-    let depth = 0;
-    while (element && depth < 5) {
-      if (
-        element.tagName === 'BUTTON' ||
-        element.tagName === 'A' ||
-        element.tagName === 'INPUT' ||
-        element.getAttribute('role') === 'button'
-      ) {
-        if (isPurchaseButton(element)) {
-          event.preventDefault();
-          event.stopPropagation();
-          event.stopImmediatePropagation();
-          createChoiceOverlay(event, element);
-          return;
-        }
-      }
-      element = element.parentElement;
-      depth++;
-    }
-  }
-
-  // Initialize
-  function init() {
-    chrome.storage.sync.get(['enabled'], (data) => {
-      if (data.enabled === false) return;
-
-      // Use capture phase to intercept before other handlers
-      document.addEventListener('click', interceptClicks, true);
-    });
-  }
-
-  // Listen for setting changes
-  chrome.storage.onChanged.addListener((changes) => {
-    if (changes.enabled) {
-      if (changes.enabled.newValue === false) {
-        document.removeEventListener('click', interceptClicks, true);
-      } else {
-        document.addEventListener('click', interceptClicks, true);
-      }
-    }
-  });
-
-  // Wait for DOM to be ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {

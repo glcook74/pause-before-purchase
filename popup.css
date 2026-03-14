@@ -1,3 +1,5 @@
+/* Dopamine Delay — Popup Dashboard Styles */
+
 * {
   margin: 0;
   padding: 0;
@@ -5,124 +7,308 @@
 }
 
 body {
-  width: 340px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #f8f7ff;
-  color: #2d2d3f;
+  width: 360px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: #F5F0E8;
+  color: #2A3A35;
 }
 
-.popup-container {
-  padding: 20px;
+.dd-popup {
+  padding: 0;
 }
 
-header {
-  text-align: center;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid #e8e5ff;
+/* ===== HEADER ===== */
+.dd-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid rgba(42, 125, 107, 0.1);
 }
 
-header h1 {
-  font-size: 18px;
-  color: #5b4fc4;
-  font-weight: 700;
+.dd-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.subtitle {
-  font-size: 12px;
-  color: #8a84b8;
-  margin-top: 4px;
-}
-
-h2 {
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #8a84b8;
-  margin-bottom: 12px;
-}
-
-.stats-section {
-  margin-bottom: 20px;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
-}
-
-.stat-card {
-  background: white;
-  border-radius: 10px;
-  padding: 12px 8px;
-  text-align: center;
-  border: 1px solid #e8e5ff;
-}
-
-.stat-card.saved {
-  border-color: #c8f7dc;
-  background: #f0fdf4;
-}
-
-.stat-number {
-  display: block;
+.dd-logo-icon {
   font-size: 24px;
+  color: #C9921A;
+}
+
+.dd-brand {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 17px;
   font-weight: 700;
-  color: #5b4fc4;
+  color: #2A3A35;
 }
 
-.stat-card.saved .stat-number {
-  color: #16a34a;
+.dd-tagline {
+  font-size: 11px;
+  color: #8B8578;
 }
 
-.stat-label {
+.dd-points-badge {
+  background: #C9921A;
+  color: #fff;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ===== TABS ===== */
+.dd-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(42, 125, 107, 0.1);
+}
+
+.dd-tab {
+  flex: 1;
+  padding: 12px 0;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: #8B8578;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.dd-tab:hover {
+  color: #2A7D6B;
+}
+
+.dd-tab.active {
+  color: #2A7D6B;
+  border-bottom-color: #2A7D6B;
+}
+
+/* ===== TAB CONTENT ===== */
+.dd-tab-content {
+  display: none;
+  padding: 18px 20px;
+}
+
+.dd-tab-content.active {
   display: block;
-  font-size: 10px;
-  color: #8a84b8;
-  margin-top: 4px;
-  line-height: 1.3;
 }
 
-.settings-section {
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
-  border: 1px solid #e8e5ff;
+/* ===== STATS GRID ===== */
+.dd-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
   margin-bottom: 16px;
 }
 
-.setting-row {
+.dd-stat-card {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(42, 125, 107, 0.1);
+  border-radius: 12px;
+  padding: 14px 12px;
+  text-align: center;
+}
+
+.dd-stat-card.dd-stat-teal {
+  border-color: rgba(42, 125, 107, 0.25);
+}
+
+.dd-stat-card.dd-stat-gold {
+  border-color: rgba(201, 146, 26, 0.25);
+}
+
+.dd-stat-num {
+  display: block;
+  font-size: 26px;
+  font-weight: 700;
+  color: #2A7D6B;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+.dd-stat-card.dd-stat-gold .dd-stat-num {
+  color: #C9921A;
+}
+
+.dd-stat-label {
+  display: block;
+  font-size: 11px;
+  color: #8B8578;
+  margin-top: 2px;
+}
+
+.dd-encouragement {
+  text-align: center;
+  font-size: 13px;
+  color: #2A7D6B;
+  font-style: italic;
+  padding: 8px 0;
+}
+
+/* ===== SAVED LIST ===== */
+.dd-saved-list {
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.dd-empty-state {
+  text-align: center;
+  color: #8B8578;
+  font-size: 13px;
+  padding: 24px 0;
+}
+
+.dd-saved-item {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(42, 125, 107, 0.1);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+
+.dd-saved-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+
+.dd-saved-product {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2A3A35;
+  flex: 1;
+  margin-right: 8px;
+}
+
+.dd-saved-price {
+  font-size: 14px;
+  font-weight: 700;
+  color: #C9921A;
+  white-space: nowrap;
+}
+
+.dd-saved-meta {
+  font-size: 11px;
+  color: #8B8578;
+  margin-bottom: 8px;
+}
+
+.dd-saved-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.dd-saved-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.dd-saved-btn-buy {
+  background: rgba(42, 125, 107, 0.08);
+  color: #2A7D6B;
+  border: 1px solid rgba(42, 125, 107, 0.2);
+}
+
+.dd-saved-btn-buy:hover {
+  background: rgba(42, 125, 107, 0.15);
+}
+
+.dd-saved-btn-remove {
+  background: rgba(201, 146, 26, 0.08);
+  color: #C9921A;
+  border: 1px solid rgba(201, 146, 26, 0.2);
+}
+
+.dd-saved-btn-remove:hover {
+  background: rgba(201, 146, 26, 0.15);
+}
+
+.dd-still-want {
+  font-size: 11px;
+  color: #8B8578;
+  margin-bottom: 6px;
+  font-style: italic;
+}
+
+/* ===== SETTINGS ===== */
+.dd-setting-group {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(42, 125, 107, 0.1);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.dd-setting-heading {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #2A3A35;
+  margin-bottom: 8px;
+}
+
+.dd-setting-note {
+  font-size: 11px;
+  color: #8B8578;
+  margin-bottom: 10px;
+}
+
+.dd-setting-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px 0;
-  border-bottom: 1px solid #f0eeff;
+  border-bottom: 1px solid rgba(42, 125, 107, 0.06);
 }
 
-.setting-row:last-of-type {
+.dd-setting-row:last-child {
   border-bottom: none;
 }
 
-.setting-row label:first-child {
-  font-size: 13px;
+.dd-setting-row label:first-child {
+  font-size: 12px;
   font-weight: 500;
+  color: #2A3A35;
+  flex: 1;
+  margin-right: 12px;
 }
 
-.toggle {
+select {
+  padding: 5px 8px;
+  border: 1px solid rgba(42, 125, 107, 0.2);
+  border-radius: 6px;
+  font-size: 12px;
+  color: #2A3A35;
+  background: #F5F0E8;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* Toggle switch */
+.dd-toggle {
   position: relative;
   display: inline-block;
-  width: 44px;
+  width: 42px;
   height: 24px;
 }
 
-.toggle input {
+.dd-toggle input {
   opacity: 0;
   width: 0;
   height: 0;
 }
 
-.toggle-slider {
+.dd-toggle-slider {
   position: absolute;
   cursor: pointer;
   top: 0;
@@ -134,7 +320,7 @@ h2 {
   transition: 0.3s;
 }
 
-.toggle-slider::before {
+.dd-toggle-slider::before {
   content: '';
   position: absolute;
   height: 18px;
@@ -146,49 +332,36 @@ h2 {
   transition: 0.3s;
 }
 
-.toggle input:checked + .toggle-slider {
-  background: #5b4fc4;
+.dd-toggle input:checked + .dd-toggle-slider {
+  background: #2A7D6B;
 }
 
-.toggle input:checked + .toggle-slider::before {
-  transform: translateX(20px);
+.dd-toggle input:checked + .dd-toggle-slider::before {
+  transform: translateX(18px);
 }
 
-select {
-  padding: 4px 8px;
-  border: 1px solid #e8e5ff;
-  border-radius: 6px;
+.dd-site-toggles {
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.dd-site-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
   font-size: 12px;
-  color: #2d2d3f;
-  background: #f8f7ff;
-  cursor: pointer;
 }
 
-.reset-btn {
-  width: 100%;
-  margin-top: 12px;
-  padding: 8px;
-  background: none;
-  border: 1px solid #e8e5ff;
-  border-radius: 8px;
-  color: #8a84b8;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.reset-btn:hover {
-  background: #fee2e2;
-  border-color: #fca5a5;
-  color: #dc2626;
-}
-
-footer {
+/* ===== FOOTER ===== */
+.dd-footer {
   text-align: center;
+  padding: 10px 20px 14px;
+  border-top: 1px solid rgba(42, 125, 107, 0.08);
 }
 
-footer p {
+.dd-footer p {
   font-size: 11px;
-  color: #b0aad0;
+  color: #8B8578;
   font-style: italic;
 }
