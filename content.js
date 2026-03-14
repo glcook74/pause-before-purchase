@@ -293,8 +293,16 @@
   async function showScreen2(overlay, productInfo, settings) {
     const modal = overlay.querySelector('.dd-modal');
     const profile = await DDStorage.getProfile();
-    const alternatives = DDAlternatives.getAlternatives(4, profile);
     const pauseDuration = await DDStorage.getEffectivePauseDuration(productInfo.price);
+
+    // Check Pro status
+    const proData = await new Promise(resolve => {
+      chrome.storage.local.get('dd_pro', result => resolve(result));
+    });
+    const isPro = proData.dd_pro === true;
+
+    const altCount = isPro ? 4 : 3;
+    const alternatives = DDAlternatives.getAlternatives(altCount, profile);
 
     let remaining = pauseDuration;
 
@@ -306,6 +314,24 @@
       </button>
     `).join('');
 
+    // Pro: "See more options" button | Free: locked upsell card
+    let proSectionHTML = '';
+    if (isPro) {
+      proSectionHTML = `
+        <button class="dd-see-more-btn" id="dd-see-more">See more options</button>
+        <div id="dd-more-alternatives" class="dd-alternatives-grid dd-more-grid" style="display: none !important;"></div>
+      `;
+    } else {
+      const remaining_count = DDAlternatives.LIBRARY.length - altCount;
+      proSectionHTML = `
+        <div class="dd-locked-card">
+          <span class="dd-locked-icon">⭐</span>
+          <span class="dd-locked-text">Pro — ${remaining_count} more activities + your personalised picks</span>
+          <a href="https://buy.stripe.com/test_dopamine_delay_pro" target="_blank" class="dd-locked-btn">Unlock Pro — £4.99/month</a>
+        </div>
+      `;
+    }
+
     modal.innerHTML = `
       <button class="dd-close-btn" title="Close" aria-label="Close">&times;</button>
       <h2 class="dd-heading">Let's redirect that energy</h2>
@@ -314,6 +340,8 @@
       <div class="dd-alternatives-grid">
         ${altTilesHTML}
       </div>
+
+      ${proSectionHTML}
 
       <div id="dd-alt-detail" class="dd-detail-box" style="display: none !important;"></div>
 
@@ -374,6 +402,47 @@
         }
       });
     });
+
+    // Pro: See more options
+    const seeMoreBtn = document.getElementById('dd-see-more');
+    if (seeMoreBtn) {
+      seeMoreBtn.addEventListener('click', () => {
+        const moreGrid = document.getElementById('dd-more-alternatives');
+        if (moreGrid && moreGrid.style.display !== 'none') {
+          moreGrid.style.display = 'none';
+          seeMoreBtn.textContent = 'See more options';
+          return;
+        }
+        const shownIds = alternatives.map(a => a.id);
+        const remaining = DDAlternatives.getFullLibrary().filter(a => !shownIds.includes(a.id));
+        if (moreGrid) {
+          moreGrid.innerHTML = remaining.map(alt => `
+            <button class="dd-alt-tile" data-id="${alt.id}" data-action="${alt.action}" ${alt.url ? `data-url="${alt.url}"` : ''} ${alt.detail ? `data-detail="${escapeHTML(alt.detail)}"` : ''}>
+              <span class="dd-alt-icon">${alt.icon}</span>
+              <span class="dd-alt-category">${alt.category}</span>
+              <span class="dd-alt-label">${alt.label}</span>
+            </button>
+          `).join('');
+          moreGrid.style.display = 'grid';
+          seeMoreBtn.textContent = 'Show fewer';
+          // Attach click handlers to new tiles
+          moreGrid.querySelectorAll('.dd-alt-tile').forEach(tile => {
+            tile.addEventListener('click', () => {
+              const action = tile.dataset.action;
+              if (action === 'external' && tile.dataset.url) {
+                window.open(tile.dataset.url, '_blank');
+              } else if (action === 'inline' && tile.dataset.detail) {
+                const detailBox = document.getElementById('dd-alt-detail');
+                if (detailBox) {
+                  detailBox.textContent = tile.dataset.detail;
+                  detailBox.style.display = 'block';
+                }
+              }
+            });
+          });
+        }
+      });
+    }
 
     // Save for later
     document.getElementById('dd-save-btn').addEventListener('click', async () => {

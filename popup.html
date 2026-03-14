@@ -17,7 +17,10 @@
           <p class="dd-tagline">Your pause companion</p>
         </div>
       </div>
-      <div class="dd-points-badge" id="dd-total-points">0 pts</div>
+      <div class="dd-header-badges">
+        <span class="dd-pro-badge" id="dd-pro-badge" style="display: none;">Pro ⭐</span>
+        <div class="dd-points-badge" id="dd-total-points">0 pts</div>
+      </div>
     </header>
 
     <!-- Tabs -->
@@ -86,6 +89,21 @@
         </div>
       </div>
 
+      <div class="dd-setting-group" id="dd-pro-section">
+        <h3 class="dd-setting-heading">Unlock Pro</h3>
+        <div id="dd-pro-activated" class="dd-pro-activated" style="display: none;">
+          <span class="dd-pro-confirmed">Pro activated ⭐</span>
+        </div>
+        <div id="dd-pro-form">
+          <label class="dd-pro-label" for="dd-licence-key">Enter your licence key</label>
+          <div class="dd-pro-input-row">
+            <input type="text" id="dd-licence-key" class="dd-pro-input" placeholder="DD-PRO-XXXX-XXXX" maxlength="16" spellcheck="false" autocomplete="off">
+            <button id="dd-activate-btn" class="dd-activate-btn">Activate</button>
+          </div>
+          <p id="dd-pro-error" class="dd-pro-error" style="display: none;">That key doesn't look right — check your email</p>
+        </div>
+      </div>
+
       <div class="dd-setting-group">
         <h3 class="dd-setting-heading">Site controls</h3>
         <p class="dd-setting-note">Dopamine Delay runs on checkout pages of major UK shopping sites. Visit a site and it will appear here.</p>
@@ -100,6 +118,7 @@
 
   <script src="lib/browser-polyfill.js"></script>
   <script src="lib/storage.js"></script>
+  <script src="lib/keys.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

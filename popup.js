@@ -133,6 +133,52 @@ document.addEventListener('DOMContentLoaded', async () => {
     return div.innerHTML;
   }
 
+  // ===== PRO LICENCE =====
+  async function loadProStatus() {
+    const result = await new Promise(resolve => {
+      chrome.storage.local.get('dd_pro', resolve);
+    });
+    const isPro = result.dd_pro === true;
+
+    const badge = document.getElementById('dd-pro-badge');
+    const form = document.getElementById('dd-pro-form');
+    const activated = document.getElementById('dd-pro-activated');
+
+    if (isPro) {
+      badge.style.display = 'inline-block';
+      form.style.display = 'none';
+      activated.style.display = 'block';
+    } else {
+      badge.style.display = 'none';
+      form.style.display = 'block';
+      activated.style.display = 'none';
+    }
+  }
+
+  document.getElementById('dd-activate-btn').addEventListener('click', async () => {
+    const input = document.getElementById('dd-licence-key');
+    const error = document.getElementById('dd-pro-error');
+    const key = input.value.trim().toUpperCase();
+
+    if (DDKeys.isValid(key)) {
+      await new Promise(resolve => {
+        chrome.storage.local.set({ dd_pro: true }, resolve);
+      });
+      error.style.display = 'none';
+      loadProStatus();
+      loadTodayTab();
+    } else {
+      error.style.display = 'block';
+      input.classList.add('dd-pro-input-error');
+      setTimeout(() => input.classList.remove('dd-pro-input-error'), 2000);
+    }
+  });
+
+  document.getElementById('dd-licence-key').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('dd-activate-btn').click();
+  });
+
   // Initial load
   loadTodayTab();
+  loadProStatus();
 });
