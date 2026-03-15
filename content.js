@@ -35,7 +35,8 @@
 
   async function init() {
     // Check if onboarded
-    const onboarded = await DDStorage.isOnboarded();
+  const { dd_onboarded } = await chrome.storage.local.get('dd_onboarded');
+const onboarded = dd_onboarded || false;
     if (!onboarded) return;
 
     // Check if this site is disabled
