@@ -13,8 +13,6 @@
       background: #faf9f6;
       color: #1a1a1a;
     }
-
-    /* Sign-in screen */
     #auth-screen {
       padding: 24px 20px;
       display: flex;
@@ -31,76 +29,121 @@
     #auth-screen input {
       width: 100%;
       padding: 10px 12px;
-      border: 1.5px solid #d4d4d4;
-      border-radius: 8px;
+      border: 1px solid #E8E2D9;
+      border-radius: 6px;
       font-size: 14px;
       outline: none;
-      transition: border-color 0.2s;
     }
-    #auth-screen input:focus {
-      border-color: #2ba5a5;
+    #auth-screen input:focus { border-color: #2A7D6B; }
+    .btn-signin {
+      width: 100%;
+      padding: 10px;
+      background: #2A7D6B;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
     }
+    .btn-signin:hover { background: #236858; }
+    .auth-links {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+    }
+    .auth-links a { color: #2A7D6B; cursor: pointer; text-decoration: none; }
+    .muted { color: #999 !important; }
     #auth-error {
-      color: #d94848;
+      color: #c0392b;
       font-size: 12px;
       text-align: center;
       display: none;
     }
-    .btn-signin {
-      width: 100%;
-      padding: 11px;
-      background: #2ba5a5;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .btn-signin:hover { background: #249090; }
-    .btn-signin:disabled { opacity: 0.6; cursor: not-allowed; }
-    .auth-links {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .auth-links a {
-      font-size: 12px;
-      color: #2ba5a5;
-      text-decoration: none;
-      cursor: pointer;
-    }
-    .auth-links a:hover { text-decoration: underline; }
-    .auth-links .muted {
-      color: #999;
-    }
-
-    /* Main extension content (your existing popup content goes here) */
-    #main-screen {
+    #signed-in-bar {
       display: none;
-    }
-    .signed-in-bar {
-      display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 16px;
-      background: #f0f0f0;
-      font-size: 11px;
+      padding: 8px 12px;
+      background: #2A7D6B;
+      color: white;
+      font-size: 12px;
+    }
+    #signed-in-bar a { color: #C9921A; cursor: pointer; text-decoration: none; font-size: 11px; }
+    .points-hero {
+      background: #2A7D6B;
+      color: white;
+      padding: 16px;
+      text-align: center;
+    }
+    .points-number {
+      font-size: 36px;
+      font-weight: bold;
+      font-family: Georgia, serif;
+      color: #C9921A;
+    }
+    .points-label { font-size: 11px; opacity: 0.9; margin-top: 2px; }
+    .stats-row {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 8px;
+      font-size: 12px;
+      opacity: 0.95;
+    }
+    .tab-bar {
+      display: flex;
+      border-bottom: 1px solid #E8E2D9;
+      background: white;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: white;
+      cursor: pointer;
+      font-size: 12px;
       color: #666;
     }
-    .signed-in-bar a {
-      color: #d94848;
-      text-decoration: none;
-      cursor: pointer;
-      font-size: 11px;
+    .tab-btn.active {
+      background: #F5F0E8;
+      color: #2A7D6B;
+      font-weight: 600;
+      border-bottom: 2px solid #2A7D6B;
     }
-    .signed-in-bar a:hover { text-decoration: underline; }
+    .tab-panel { padding: 12px; display: none; }
+    .tab-panel.active { display: block; }
+    .dashboard-link {
+      display: block;
+      text-align: center;
+      margin-top: 10px;
+      padding: 8px;
+      background: #2A7D6B;
+      color: white;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 12px;
+    }
+    .empty-state {
+      font-size: 12px;
+      color: #999;
+      text-align: center;
+      padding: 12px 8px;
+    }
+    select {
+      width: 100%;
+      padding: 6px;
+      border: 1px solid #E8E2D9;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      font-size: 12px;
+    }
+    .settings-label { font-size: 12px; color: #666; margin-bottom: 4px; }
   </style>
 </head>
 <body>
 
-  <!-- Auth screen: shown when no session -->
+  <!-- Auth screen -->
   <div id="auth-screen">
     <h2>Sign in to sync your points</h2>
     <input type="email" id="auth-email" placeholder="Email" autocomplete="email" />
@@ -113,57 +156,66 @@
     </div>
   </div>
 
-  <!-- Main screen: shown when signed in or skipped -->
-      <div id="main-screen" style="display:none;">
-  <!-- Points summary -->
-  <div style="background:#2A7D6B;color:white;padding:16px;text-align:center;">
-    <div style="font-size:36px;font-weight:bold;" id="points-display">0</div>
-    <div style="font-size:12px;opacity:0.9;">Delay Points</div>
-    <div style="display:flex;justify-content:center;gap:16px;margin-top:8px;font-size:12px;">
-      <span>🔥 <span id="streak-display">0</span> day streak</span>
-      <span>⏸ <span id="pauses-display">0</span> pauses</span>
+  <!-- Main screen -->
+  <div id="main-screen" style="display:none;">
+
+    <!-- Signed in bar -->
+    <div id="signed-in-bar">
+      <span id="user-email"></span>
+      <a id="link-signout">Sign out</a>
     </div>
-  </div>
-  <!-- Tabs -->
-  <div style="display:flex;border-bottom:1px solid #E8E2D9;">
-    <button onclick="showTab('today')" id="tab-today" style="flex:1;padding:8px;border:none;background:#F5F0E8;cursor:pointer;font-size:12px;color:#2A7D6B;font-weight:600;">Today</button>
-    <button onclick="showTab('saved')" id="tab-saved" style="flex:1;padding:8px;border:none;background:white;cursor:pointer;font-size:12px;color:#666;">Saved</button>
-    <button onclick="showTab('settings')" id="tab-settings" style="flex:1;padding:8px;border:none;background:white;cursor:pointer;font-size:12px;color:#666;">Settings</button>
-  </div>
-  <!-- Today tab -->
-  <div id="panel-today" style="padding:12px;">
-    <div style="font-size:12px;color:#666;text-align:center;padding:8px;">
-      Your pauses will appear here as you shop. 🛒
+
+    <!-- Points hero -->
+    <div class="points-hero">
+      <div class="points-number" id="points-display">0</div>
+      <div class="points-label">Delay Points</div>
+      <div class="stats-row">
+        <span>🔥 <span id="streak-display">0</span> day streak</span>
+        <span>⏸ <span id="pauses-display">0</span> pauses</span>
+      </div>
     </div>
-    <a href="https://dopaminedelay.com/dashboard" target="_blank" 
-       style="display:block;text-align:center;margin-top:8px;padding:8px;background:#2A7D6B;color:white;border-radius:6px;text-decoration:none;font-size:12px;">
-      View full dashboard →
-    </a>
-  </div>
-  <!-- Saved tab -->
-  <div id="panel-saved" style="display:none;padding:12px;">
-    <div id="saved-list" style="font-size:12px;color:#666;text-align:center;padding:8px;">
-      Items you save for later appear here.
+
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tab-today" onclick="showTab('today')">Today</button>
+      <button class="tab-btn" id="tab-saved" onclick="showTab('saved')">Saved</button>
+      <button class="tab-btn" id="tab-settings" onclick="showTab('settings')">Settings</button>
     </div>
-  </div>
-  <!-- Settings tab -->
-  <div id="panel-settings" style="display:none;padding:12px;font-size:12px;">
-    <div style="margin-bottom:8px;color:#666;">Pause duration</div>
-    <select id="pause-duration" style="width:100%;padding:6px;border:1px solid #E8E2D9;border-radius:4px;margin-bottom:12px;">
-      <option value="10">10 seconds</option>
-      <option value="30">30 seconds</option>
-      <option value="60">60 seconds</option>
-    </select>
-    <a href="https://dopaminedelay.com/dashboard" target="_blank"
-       style="display:block;text-align:center;padding:8px;background:#F5F0E8;color:#2A7D6B;border-radius:6px;text-decoration:none;font-size:12px;border:1px solid #2A7D6B;">
-      Full dashboard & account settings →
-    </a>
-  </div>
-</div>
+
+    <!-- Today panel -->
+    <div class="tab-panel active" id="panel-today">
+      <div class="empty-state">Your pauses will appear here as you shop. 🛒</div>
+      <a class="dashboard-link" href="https://dopaminedelay.com/dashboard" target="_blank">
+        View full dashboard →
+      </a>
+    </div>
+
+    <!-- Saved panel -->
+    <div class="tab-panel" id="panel-saved">
+      <div id="saved-list" class="empty-state">
+        Items you save for later appear here.
+      </div>
+    </div>
+
+    <!-- Settings panel -->
+    <div class="tab-panel" id="panel-settings">
+      <div class="settings-label">Pause duration</div>
+      <select id="pause-duration">
+        <option value="10">10 seconds</option>
+        <option value="30">30 seconds</option>
+        <option value="60">60 seconds</option>
+      </select>
+      <a class="dashboard-link" href="https://dopaminedelay.com/dashboard" target="_blank"
+         style="background:#F5F0E8;color:#2A7D6B;border:1px solid #2A7D6B;">
+        Account settings →
+      </a>
+    </div>
+
   </div>
 
-  <script src="supabase-config.js"></script>
   <script src="supabase.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="supabase-client.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
