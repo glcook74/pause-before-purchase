@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const list = document.getElementById('saved-list');
 
     if (items.length === 0) {
-      list.innerHTML = '<p class="dd-empty-state">No saved items yet. When you pause and save, they\'ll appear here.</p>';
+      list.innerHTML = '<p class="dd-empty-state">No saved items yet. When you pause and save, they will appear here.</p>';
       return;
     }
 

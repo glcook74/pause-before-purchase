@@ -356,7 +356,7 @@
 
   function showAffirmation(overlay, customMessage) {
     const modal = overlay.querySelector('.dd-modal');
-    const message = customMessage || 'Good thinking. You\'ve got this.';
+    const message = customMessage || "Good thinking. You've got this.";
     modal.innerHTML = `
       <div class="dd-affirmation">
         <span class="dd-affirmation-icon">💚</span>
