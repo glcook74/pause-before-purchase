@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       'Every pause is a win.',
       'Your prefrontal cortex thanks you.',
       'Small pauses, big changes.',
-      'You're building a new pattern.',
+      "You're building a new pattern.",
       'Awareness is the first step.'
     ];
     const count = pauses.count || 0;

@@ -1,6 +1,6 @@
 try {
   importScripts(
-    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'supabase.js',
     'supabase-config.js',
     'supabase-client.js',
     'sync.js'

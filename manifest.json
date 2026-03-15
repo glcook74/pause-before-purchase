@@ -4,6 +4,12 @@
   "version": "1.0.0",
   "description": "A pause-before-purchase companion for ADHD brains. Intercepts online checkouts with a brief, voluntary pause — grounded in dopamine reward deficit research.",
   "permissions": ["storage", "activeTab"],
+  "host_permissions": [
+    "https://*.supabase.co/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
   "background": {
     "service_worker": "background.js"
   },
