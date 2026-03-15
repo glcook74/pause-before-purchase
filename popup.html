@@ -114,19 +114,52 @@
   </div>
 
   <!-- Main screen: shown when signed in or skipped -->
-  <div id="main-screen">
-    <div class="signed-in-bar" id="signed-in-bar" style="display:none;">
-      <span id="user-email"></span>
-      <a id="link-signout">Sign out</a>
+      <div id="main-screen" style="display:none;">
+  <!-- Points summary -->
+  <div style="background:#2A7D6B;color:white;padding:16px;text-align:center;">
+    <div style="font-size:36px;font-weight:bold;" id="points-display">0</div>
+    <div style="font-size:12px;opacity:0.9;">Delay Points</div>
+    <div style="display:flex;justify-content:center;gap:16px;margin-top:8px;font-size:12px;">
+      <span>🔥 <span id="streak-display">0</span> day streak</span>
+      <span>⏸ <span id="pauses-display">0</span> pauses</span>
     </div>
-    <!-- 
-      Your existing popup content goes below this line.
-      The extension's normal UI (points display, pause history, etc.)
-      should be placed here or loaded dynamically.
-    -->
-    <div style="padding: 20px; text-align: center; color: #666; font-size: 13px;">
-      Extension content loads here
+  </div>
+  <!-- Tabs -->
+  <div style="display:flex;border-bottom:1px solid #E8E2D9;">
+    <button onclick="showTab('today')" id="tab-today" style="flex:1;padding:8px;border:none;background:#F5F0E8;cursor:pointer;font-size:12px;color:#2A7D6B;font-weight:600;">Today</button>
+    <button onclick="showTab('saved')" id="tab-saved" style="flex:1;padding:8px;border:none;background:white;cursor:pointer;font-size:12px;color:#666;">Saved</button>
+    <button onclick="showTab('settings')" id="tab-settings" style="flex:1;padding:8px;border:none;background:white;cursor:pointer;font-size:12px;color:#666;">Settings</button>
+  </div>
+  <!-- Today tab -->
+  <div id="panel-today" style="padding:12px;">
+    <div style="font-size:12px;color:#666;text-align:center;padding:8px;">
+      Your pauses will appear here as you shop. 🛒
     </div>
+    <a href="https://dopaminedelay.com/dashboard" target="_blank" 
+       style="display:block;text-align:center;margin-top:8px;padding:8px;background:#2A7D6B;color:white;border-radius:6px;text-decoration:none;font-size:12px;">
+      View full dashboard →
+    </a>
+  </div>
+  <!-- Saved tab -->
+  <div id="panel-saved" style="display:none;padding:12px;">
+    <div id="saved-list" style="font-size:12px;color:#666;text-align:center;padding:8px;">
+      Items you save for later appear here.
+    </div>
+  </div>
+  <!-- Settings tab -->
+  <div id="panel-settings" style="display:none;padding:12px;font-size:12px;">
+    <div style="margin-bottom:8px;color:#666;">Pause duration</div>
+    <select id="pause-duration" style="width:100%;padding:6px;border:1px solid #E8E2D9;border-radius:4px;margin-bottom:12px;">
+      <option value="10">10 seconds</option>
+      <option value="30">30 seconds</option>
+      <option value="60">60 seconds</option>
+    </select>
+    <a href="https://dopaminedelay.com/dashboard" target="_blank"
+       style="display:block;text-align:center;padding:8px;background:#F5F0E8;color:#2A7D6B;border-radius:6px;text-decoration:none;font-size:12px;border:1px solid #2A7D6B;">
+      Full dashboard & account settings →
+    </a>
+  </div>
+</div>
   </div>
 
   <script src="supabase-config.js"></script>
