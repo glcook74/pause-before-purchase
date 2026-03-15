@@ -172,7 +172,7 @@ linkSignout.addEventListener('click', async () => {
   ]);
   showAuthScreen();
 });
-function showTab(tab) {
+window.showTab = function(tab) {
   ['today','saved','settings'].forEach(t => {
     document.getElementById('panel-'+t).classList.toggle('active', t===tab);
     document.getElementById('tab-'+t).classList.toggle('active', t===tab);
