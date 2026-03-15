@@ -8,117 +8,158 @@
 </head>
 <body>
   <div class="dd-popup">
-    <!-- Header -->
-    <header class="dd-header">
-      <div class="dd-logo">
+
+    <!-- Auth Screen (shown when not signed in and not skipped) -->
+    <div id="auth-screen" class="dd-auth-screen" style="display: none;">
+      <div class="dd-auth-logo">
         <span class="dd-logo-icon">⏸</span>
-        <div>
-          <h1 class="dd-brand">Dopamine Delay</h1>
-          <p class="dd-tagline">Your pause companion</p>
-        </div>
-      </div>
-      <div class="dd-header-badges">
-        <span class="dd-pro-badge" id="dd-pro-badge" style="display: none;">Pro ⭐</span>
-        <div class="dd-points-badge" id="dd-total-points">0 pts</div>
-      </div>
-    </header>
-
-    <!-- Tabs -->
-    <nav class="dd-tabs">
-      <button class="dd-tab active" data-tab="today">Today</button>
-      <button class="dd-tab" data-tab="saved">Saved</button>
-      <button class="dd-tab" data-tab="settings">Settings</button>
-    </nav>
-
-    <!-- Tab: Today -->
-    <section class="dd-tab-content active" id="tab-today">
-      <div class="dd-stats-grid">
-        <div class="dd-stat-card">
-          <span class="dd-stat-num" id="stat-pauses">0</span>
-          <span class="dd-stat-label">Pauses today</span>
-        </div>
-        <div class="dd-stat-card dd-stat-gold">
-          <span class="dd-stat-num" id="stat-points">0</span>
-          <span class="dd-stat-label">Points today</span>
-        </div>
-        <div class="dd-stat-card dd-stat-teal">
-          <span class="dd-stat-num" id="stat-saved-money">£0</span>
-          <span class="dd-stat-label">Potentially saved</span>
-        </div>
-        <div class="dd-stat-card">
-          <span class="dd-stat-num" id="stat-streak">0</span>
-          <span class="dd-stat-label">Day streak 🔥</span>
-        </div>
-      </div>
-      <p class="dd-encouragement" id="dd-encouragement">Every pause is a win.</p>
-    </section>
-
-    <!-- Tab: Saved for Later -->
-    <section class="dd-tab-content" id="tab-saved">
-      <div id="saved-list" class="dd-saved-list">
-        <p class="dd-empty-state">No saved items yet. When you pause and save, they'll appear here.</p>
-      </div>
-    </section>
-
-    <!-- Tab: Settings -->
-    <section class="dd-tab-content" id="tab-settings">
-      <div class="dd-setting-group">
-        <div class="dd-setting-row">
-          <label>Pause duration</label>
-          <select id="setting-pause-duration">
-            <option value="10">10 seconds</option>
-            <option value="30">30 seconds</option>
-            <option value="60">60 seconds</option>
-          </select>
-        </div>
-
-        <div class="dd-setting-row">
-          <label>Late-night mode (extended pause after 9pm)</label>
-          <label class="dd-toggle">
-            <input type="checkbox" id="setting-late-night" checked>
-            <span class="dd-toggle-slider"></span>
-          </label>
-        </div>
-
-        <div class="dd-setting-row">
-          <label>Theme</label>
-          <select id="setting-theme">
-            <option value="cream">Cream / Teal</option>
-            <option value="dark">Dark mode</option>
-          </select>
-        </div>
+        <h1 class="dd-brand">Dopamine Delay</h1>
+        <p class="dd-tagline">Your pause companion</p>
       </div>
 
-      <div class="dd-setting-group" id="dd-pro-section">
-        <h3 class="dd-setting-heading">Unlock Pro</h3>
-        <div id="dd-pro-activated" class="dd-pro-activated" style="display: none;">
-          <span class="dd-pro-confirmed">Pro activated ⭐</span>
-        </div>
-        <div id="dd-pro-form">
-          <label class="dd-pro-label" for="dd-licence-key">Enter your licence key</label>
-          <div class="dd-pro-input-row">
-            <input type="text" id="dd-licence-key" class="dd-pro-input" placeholder="DD-PRO-XXXX-XXXX" maxlength="16" spellcheck="false" autocomplete="off">
-            <button id="dd-activate-btn" class="dd-activate-btn">Activate</button>
+      <div class="dd-auth-form">
+        <label class="dd-auth-label" for="auth-email">Email</label>
+        <input type="email" id="auth-email" class="dd-auth-input" placeholder="you@example.com" autocomplete="email">
+
+        <label class="dd-auth-label" for="auth-password">Password</label>
+        <input type="password" id="auth-password" class="dd-auth-input" placeholder="Your password" autocomplete="current-password">
+
+        <p id="auth-error" class="dd-auth-error" style="display: none;"></p>
+
+        <button id="btn-signin" class="dd-auth-btn">Sign in</button>
+      </div>
+
+      <div class="dd-auth-links">
+        <button id="link-signup" class="dd-auth-link">Create an account</button>
+        <button id="link-skip" class="dd-auth-link dd-auth-link-skip">Use without an account</button>
+      </div>
+    </div>
+
+    <!-- Main Screen (dashboard) -->
+    <div id="main-screen" style="display: none;">
+
+      <!-- Signed-in bar -->
+      <div id="signed-in-bar" class="dd-signed-in-bar" style="display: none;">
+        <span class="dd-signed-in-email" id="user-email"></span>
+        <button id="link-signout" class="dd-signout-link">Sign out</button>
+      </div>
+
+      <!-- Header -->
+      <header class="dd-header">
+        <div class="dd-logo">
+          <span class="dd-logo-icon">⏸</span>
+          <div>
+            <h1 class="dd-brand">Dopamine Delay</h1>
+            <p class="dd-tagline">Your pause companion</p>
           </div>
-          <p id="dd-pro-error" class="dd-pro-error" style="display: none;">That key doesn't look right — check your email</p>
         </div>
-      </div>
+        <div class="dd-header-badges">
+          <span class="dd-pro-badge" id="dd-pro-badge" style="display: none;">Pro ⭐</span>
+          <div class="dd-points-badge" id="dd-total-points">0 pts</div>
+        </div>
+      </header>
 
-      <div class="dd-setting-group">
-        <h3 class="dd-setting-heading">Site controls</h3>
-        <p class="dd-setting-note">Dopamine Delay runs on checkout pages of major UK shopping sites. Visit a site and it will appear here.</p>
-        <div id="site-toggles" class="dd-site-toggles"></div>
-      </div>
-    </section>
+      <!-- Tabs -->
+      <nav class="dd-tabs">
+        <button class="dd-tab active" data-tab="today">Today</button>
+        <button class="dd-tab" data-tab="saved">Saved</button>
+        <button class="dd-tab" data-tab="settings">Settings</button>
+      </nav>
 
-    <footer class="dd-footer">
-      <p>Working with your brain, not against it.</p>
-    </footer>
+      <!-- Tab: Today -->
+      <section class="dd-tab-content active" id="tab-today">
+        <div class="dd-stats-grid">
+          <div class="dd-stat-card">
+            <span class="dd-stat-num" id="stat-pauses">0</span>
+            <span class="dd-stat-label">Pauses today</span>
+          </div>
+          <div class="dd-stat-card dd-stat-gold">
+            <span class="dd-stat-num" id="stat-points">0</span>
+            <span class="dd-stat-label">Points today</span>
+          </div>
+          <div class="dd-stat-card dd-stat-teal">
+            <span class="dd-stat-num" id="stat-saved-money">£0</span>
+            <span class="dd-stat-label">Potentially saved</span>
+          </div>
+          <div class="dd-stat-card">
+            <span class="dd-stat-num" id="stat-streak">0</span>
+            <span class="dd-stat-label">Day streak 🔥</span>
+          </div>
+        </div>
+        <p class="dd-encouragement" id="dd-encouragement">Every pause is a win.</p>
+      </section>
+
+      <!-- Tab: Saved for Later -->
+      <section class="dd-tab-content" id="tab-saved">
+        <div id="saved-list" class="dd-saved-list">
+          <p class="dd-empty-state">No saved items yet. When you pause and save, they'll appear here.</p>
+        </div>
+      </section>
+
+      <!-- Tab: Settings -->
+      <section class="dd-tab-content" id="tab-settings">
+        <div class="dd-setting-group">
+          <div class="dd-setting-row">
+            <label>Pause duration</label>
+            <select id="setting-pause-duration">
+              <option value="10">10 seconds</option>
+              <option value="30">30 seconds</option>
+              <option value="60">60 seconds</option>
+            </select>
+          </div>
+
+          <div class="dd-setting-row">
+            <label>Late-night mode (extended pause after 9pm)</label>
+            <label class="dd-toggle">
+              <input type="checkbox" id="setting-late-night" checked>
+              <span class="dd-toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="dd-setting-row">
+            <label>Theme</label>
+            <select id="setting-theme">
+              <option value="cream">Cream / Teal</option>
+              <option value="dark">Dark mode</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="dd-setting-group" id="dd-pro-section">
+          <h3 class="dd-setting-heading">Unlock Pro</h3>
+          <div id="dd-pro-activated" class="dd-pro-activated" style="display: none;">
+            <span class="dd-pro-confirmed">Pro activated ⭐</span>
+          </div>
+          <div id="dd-pro-form">
+            <label class="dd-pro-label" for="dd-licence-key">Enter your licence key</label>
+            <div class="dd-pro-input-row">
+              <input type="text" id="dd-licence-key" class="dd-pro-input" placeholder="DD-PRO-XXXX-XXXX" maxlength="16" spellcheck="false" autocomplete="off">
+              <button id="dd-activate-btn" class="dd-activate-btn">Activate</button>
+            </div>
+            <p id="dd-pro-error" class="dd-pro-error" style="display: none;">That key doesn't look right — check your email</p>
+          </div>
+        </div>
+
+        <div class="dd-setting-group">
+          <h3 class="dd-setting-heading">Site controls</h3>
+          <p class="dd-setting-note">Dopamine Delay runs on checkout pages of major UK shopping sites. Visit a site and it will appear here.</p>
+          <div id="site-toggles" class="dd-site-toggles"></div>
+        </div>
+      </section>
+
+      <footer class="dd-footer">
+        <p>Working with your brain, not against it.</p>
+      </footer>
+
+    </div><!-- /main-screen -->
   </div>
 
   <script src="lib/browser-polyfill.js"></script>
   <script src="lib/storage.js"></script>
   <script src="lib/keys.js"></script>
+  <script src="supabase.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="popup-auth.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

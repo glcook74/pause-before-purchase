@@ -17,6 +17,163 @@ body {
   padding: 0;
 }
 
+/* ===== AUTH SCREEN ===== */
+.dd-auth-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 24px 20px;
+  text-align: center;
+}
+
+.dd-auth-logo {
+  margin-bottom: 20px;
+}
+
+.dd-auth-logo .dd-logo-icon {
+  font-size: 32px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.dd-auth-logo .dd-brand {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #2A3A35;
+}
+
+.dd-auth-logo .dd-tagline {
+  font-size: 12px;
+  color: #8B8578;
+}
+
+.dd-auth-form {
+  width: 100%;
+  text-align: left;
+}
+
+.dd-auth-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #2A3A35;
+  margin-bottom: 4px;
+}
+
+.dd-auth-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid rgba(42, 125, 107, 0.2);
+  border-radius: 8px;
+  font-size: 13px;
+  color: #2A3A35;
+  background: #fff;
+  margin-bottom: 12px;
+  font-family: inherit;
+}
+
+.dd-auth-input:focus {
+  outline: none;
+  border-color: #2A7D6B;
+}
+
+.dd-auth-error {
+  font-size: 12px;
+  color: #C9541A;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.dd-auth-btn {
+  width: 100%;
+  padding: 12px;
+  background: #2A7D6B;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+  margin-top: 4px;
+}
+
+.dd-auth-btn:hover {
+  background: #236B5C;
+}
+
+.dd-auth-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dd-auth-links {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.dd-auth-link {
+  background: none;
+  border: none;
+  color: #2A7D6B;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: underline;
+  padding: 4px;
+}
+
+.dd-auth-link:hover {
+  color: #236B5C;
+}
+
+.dd-auth-link-skip {
+  color: #8B8578;
+  font-weight: 400;
+}
+
+/* ===== SIGNED-IN BAR ===== */
+.dd-signed-in-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 20px;
+  background: rgba(42, 125, 107, 0.06);
+  border-bottom: 1px solid rgba(42, 125, 107, 0.1);
+}
+
+.dd-signed-in-email {
+  font-size: 11px;
+  color: #6B6459;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  margin-right: 8px;
+}
+
+.dd-signout-link {
+  background: none;
+  border: none;
+  color: #8B8578;
+  font-size: 11px;
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: underline;
+  padding: 2px;
+  white-space: nowrap;
+}
+
+.dd-signout-link:hover {
+  color: #C9541A;
+}
+
 /* ===== HEADER ===== */
 .dd-header {
   display: flex;
