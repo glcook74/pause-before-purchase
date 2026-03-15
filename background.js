@@ -1,3 +1,15 @@
+try {
+  importScripts(
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'supabase-config.js',
+    'supabase-client.js',
+    'sync.js'
+  );
+} catch (e) {
+  console.warn('DD: Could not load Supabase scripts', e);
+  // Extension will run in local-only mode
+}
+
 /**
  * Dopamine Delay — Background Service Worker
  * Handles extension lifecycle, onboarding trigger, and checkout URL detection.
@@ -17,12 +29,26 @@ const CHECKOUT_URL_PATTERNS = [
   /\/purchase/i
 ];
 
-// URL segments that indicate non-purchase pages
-const EXCLUDED_URL_SEGMENTS = [
-  'signin', 'login', 'register', 'account', 'profile',
-  'wishlist', 'saved-items', 'returns', 'orders', 'help',
-  'support', 'search', 'browse', 'category', 'department',
-  'homepage', 'yourstore'
+// URL patterns that should NEVER trigger the overlay
+const EXCLUDED_URL_PATTERNS = [
+  /\/signin/i,
+  /\/sign-in/i,
+  /\/login/i,
+  /\/log-in/i,
+  /\/register/i,
+  /\/account/i,
+  /\/profile/i,
+  /\/wishlist/i,
+  /\/wish-list/i,
+  /\/returns/i,
+  /\/orders(?!.*checkout)/i,
+  /\/help/i,
+  /\/support/i,
+  /\/ap\/signin/i,
+  /\/ap\/register/i,
+  /\/gp\/css/i,
+  /\/yourstore/i,
+  /\/gp\/yourstore/i
 ];
 
 // Amazon-specific checkout paths
@@ -96,25 +122,34 @@ function isCheckoutURL(url) {
   try {
     const urlObj = new URL(url);
     const hostname = urlObj.hostname.replace(/^www\./, '');
-    const fullUrl = url.toLowerCase();
+    const fullPath = urlObj.pathname + urlObj.search;
 
-    // Never trigger on excluded URL segments (unless also contains checkout)
-    const hasExcluded = EXCLUDED_URL_SEGMENTS.some(seg => fullUrl.includes(seg));
-    const hasCheckoutWord = /checkout/i.test(fullUrl);
-    if (hasExcluded && !hasCheckoutWord) return false;
-
-    const isAmazon = hostname === 'amazon.co.uk' || hostname.endsWith('.amazon.co.uk');
-
-    // Amazon-specific: only trigger on known checkout/cart paths
-    if (isAmazon) {
-      return AMAZON_CHECKOUT_PATTERNS.some(p => p.test(urlObj.pathname));
+    // Never trigger on excluded pages
+    const isExcluded = EXCLUDED_URL_PATTERNS.some(pattern =>
+      pattern.test(fullPath)
+    );
+    if (isExcluded) {
+      console.log('DD: Excluded URL —', url);
+      return false;
     }
 
-    // All other sites: require a checkout URL pattern
-    // (DOM signal check happens in content script where we have page access)
-    return CHECKOUT_URL_PATTERNS.some(pattern =>
-      pattern.test(urlObj.pathname)
+    // Must be a known shopping domain
+    const isShoppingSite = SHOPPING_DOMAINS.some(domain =>
+      hostname === domain || hostname.endsWith('.' + domain)
     );
+    if (!isShoppingSite) return false;
+
+    // Must have a checkout path pattern
+    const hasCheckoutPath = CHECKOUT_URL_PATTERNS.some(pattern =>
+      pattern.test(fullPath)
+    );
+
+    if (hasCheckoutPath) {
+      console.log('DD: Checkout detected —', url);
+    }
+
+    return hasCheckoutPath;
+
   } catch {
     return false;
   }
@@ -140,6 +175,28 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message.type === 'DD_GET_HOSTNAME') {
     sendResponse({ hostname: extractHostname(message.url) });
+    return true;
+  }
+
+  if (message.type === 'PAUSE_EVENT') {
+    // Forward to sync.js handler
+    // sync.js will be loaded via importScripts
+    if (typeof syncPauseEvent === 'function') {
+      syncPauseEvent(message.data).then(() => {
+        sendResponse({ success: true });
+      }).catch((err) => {
+        console.error('DD: Sync failed', err);
+        sendResponse({ success: false, error: err.message });
+      });
+      return true; // Keep channel open for async response
+    }
+  }
+
+  if (message.type === 'DD_RETRY_SYNC') {
+    if (typeof retrySyncQueue === 'function') {
+      retrySyncQueue();
+    }
+    sendResponse({ success: true });
     return true;
   }
 });
