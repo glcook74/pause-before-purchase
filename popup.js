@@ -55,6 +55,7 @@ function showMainScreen(signedIn) {
   authScreen.style.display = 'none';
   mainScreen.style.display = 'block';
   signedInBar.style.display = signedIn ? 'flex' : 'none';
+  loadDashboardData();
 }
 
 function showError(msg) {
@@ -171,6 +172,23 @@ linkSignout.addEventListener('click', async () => {
   ]);
   showAuthScreen();
 });
+function showTab(tab) {
+  ['today','saved','settings'].forEach(t => {
+    document.getElementById('panel-'+t).classList.toggle('active', t===tab);
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+  });
+}
 
+async function loadDashboardData() {
+  const data = await chrome.storage.local.get(['dd_points','dd_streak','dd_pauses_today']);
+  const pts = data.dd_points || 0;
+  const streak = data.dd_streak || 0;
+  const pauses = data.dd_pauses_today?.count || 0;
+  if (document.getElementById('points-display')) {
+    document.getElementById('points-display').textContent = pts;
+    document.getElementById('streak-display').textContent = streak;
+    document.getElementById('pauses-display').textContent = pauses;
+  }
+}
 // Init on popup open
 init();
