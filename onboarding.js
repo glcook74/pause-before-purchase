@@ -43,7 +43,7 @@
   // Screen 3 → 4
   document.getElementById('btn-next-3').addEventListener('click', async () => {
     if (selectedProfile) {
-      await DDStorage.setProfile(selectedProfile);
+      await chrome.storage.local.set({ dd_profile: selectedProfile });
     }
     showScreen(4);
   });
@@ -60,9 +60,10 @@
   // Screen 5: Finish
   document.getElementById('btn-finish').addEventListener('click', async () => {
     // Award 50 welcome points
-    await DDStorage.addPoints(50);
+    const { dd_points } = await chrome.storage.local.get('dd_points');
+    await chrome.storage.local.set({ dd_points: (dd_points || 0) + 50 });
     // Mark as onboarded
-    await DDStorage.setOnboarded();
+    await chrome.storage.local.set({ dd_onboarded: true });
     // Close the tab
     window.close();
   });

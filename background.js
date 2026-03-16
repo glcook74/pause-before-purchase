@@ -14,6 +14,16 @@ try {
 
 // On service worker startup: retry queued events and check pro status
 chrome.runtime.onInstalled.addListener(async () => {
+  // Award 50 welcome bonus points if not yet awarded
+  const { dd_welcome_bonus } = await chrome.storage.local.get('dd_welcome_bonus');
+  if (!dd_welcome_bonus) {
+    const { dd_points } = await chrome.storage.local.get('dd_points');
+    await chrome.storage.local.set({
+      dd_points: (dd_points || 0) + 50,
+      dd_welcome_bonus: true,
+    });
+  }
+
   await retrySyncQueue();
   await checkProStatus();
 });
