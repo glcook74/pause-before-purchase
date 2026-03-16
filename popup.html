@@ -4,148 +4,314 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=320">
   <title>Dopamine Delay</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       width: 320px;
       min-height: 200px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #faf9f6;
-      color: #1a1a1a;
+      font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F9F7F4;
+      color: #3d3d3a;
+      font-size: 15px;
+      line-height: 1.6;
     }
+
+    /* ===== AUTH SCREEN ===== */
     #auth-screen {
-      padding: 24px 20px;
+      padding: 28px 20px;
       display: flex;
       flex-direction: column;
       gap: 14px;
     }
     #auth-screen h2 {
-      font-family: Georgia, 'Times New Roman', serif;
       font-size: 18px;
-      font-weight: 600;
-      color: #1a1a1a;
+      font-weight: 700;
+      color: #3d3d3a;
       text-align: center;
     }
     #auth-screen input {
       width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #E8E2D9;
-      border-radius: 6px;
-      font-size: 14px;
+      padding: 12px 14px;
+      border: 1.5px solid rgba(0, 0, 0, 0.08);
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: 'Nunito', sans-serif;
       outline: none;
+      background: #fff;
+      color: #3d3d3a;
     }
-    #auth-screen input:focus { border-color: #2A7D6B; }
+    #auth-screen input:focus {
+      border-color: #1D9E75;
+    }
     .btn-signin {
       width: 100%;
-      padding: 10px;
-      background: #2A7D6B;
+      height: 52px;
+      background: #1D9E75;
       color: white;
       border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 600;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: 'Nunito', sans-serif;
       cursor: pointer;
+      transition: background 0.2s;
     }
-    .btn-signin:hover { background: #236858; }
+    .btn-signin:hover { background: #178e68; }
     .auth-links {
       display: flex;
       justify-content: space-between;
-      font-size: 12px;
+      font-size: 14px;
     }
-    .auth-links a { color: #2A7D6B; cursor: pointer; text-decoration: none; }
-    .muted { color: #999 !important; }
+    .auth-links a {
+      color: #1D9E75;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .auth-links .muted {
+      color: #888 !important;
+      font-weight: 400;
+    }
     #auth-error {
-      color: #c0392b;
-      font-size: 12px;
+      color: #E8954A;
+      font-size: 14px;
       text-align: center;
       display: none;
     }
+
+    /* ===== HEADER ===== */
+    .dd-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 12px;
+    }
+    .dd-wordmark {
+      font-size: 16px;
+      font-weight: 700;
+      color: #3d3d3a;
+      letter-spacing: -0.3px;
+    }
+    .dd-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: #888;
+    }
+    .dd-status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #1D9E75;
+    }
+    .dd-status-dot.paused {
+      background: #ccc;
+    }
+
+    /* ===== SIGNED IN BAR ===== */
     #signed-in-bar {
       display: none;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 12px;
-      background: #2A7D6B;
-      color: white;
-      font-size: 12px;
+      padding: 8px 20px;
+      font-size: 13px;
+      color: #888;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
     }
-    #signed-in-bar a { color: #C9921A; cursor: pointer; text-decoration: none; font-size: 11px; }
-    .points-hero {
-      background: #2A7D6B;
-      color: white;
-      padding: 16px;
-      text-align: center;
+    #signed-in-bar a {
+      color: #1D9E75;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
     }
-    .points-number {
-      font-size: 36px;
-      font-weight: bold;
-      font-family: Georgia, serif;
-      color: #C9921A;
+
+    /* ===== TODAY STATS ===== */
+    .dd-today-stats {
+      padding: 0 20px 16px;
+      font-size: 14px;
+      color: #888;
     }
-    .points-label { font-size: 11px; opacity: 0.9; margin-top: 2px; }
-    .stats-row {
-      display: flex;
-      justify-content: center;
-      gap: 16px;
-      margin-top: 8px;
-      font-size: 12px;
-      opacity: 0.95;
+
+    /* ===== CONTENT AREA ===== */
+    .dd-content {
+      padding: 0 20px 20px;
     }
+
+    /* ===== TAB BAR ===== */
     .tab-bar {
       display: flex;
-      border-bottom: 1px solid #E8E2D9;
-      background: white;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      padding: 0 20px;
     }
     .tab-btn {
       flex: 1;
-      padding: 8px;
+      padding: 10px 0;
       border: none;
-      background: white;
+      background: transparent;
       cursor: pointer;
-      font-size: 12px;
-      color: #666;
+      font-size: 14px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600;
+      color: #888;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
     }
     .tab-btn.active {
-      background: #F5F0E8;
-      color: #2A7D6B;
-      font-weight: 600;
-      border-bottom: 2px solid #2A7D6B;
+      color: #1D9E75;
+      border-bottom-color: #1D9E75;
     }
-    .tab-panel { padding: 12px; display: none; }
+
+    /* ===== TAB PANELS ===== */
+    .tab-panel {
+      padding: 16px 20px 20px;
+      display: none;
+    }
     .tab-panel.active { display: block; }
-    .dashboard-link {
+
+    /* ===== LINKS ===== */
+    .dd-link {
       display: block;
       text-align: center;
-      margin-top: 10px;
+      margin-top: 12px;
       padding: 8px;
-      background: #2A7D6B;
-      color: white;
-      border-radius: 6px;
+      color: #1D9E75;
       text-decoration: none;
-      font-size: 12px;
+      font-size: 14px;
+      font-weight: 600;
     }
+
+    /* ===== EMPTY STATE ===== */
     .empty-state {
-      font-size: 12px;
-      color: #999;
+      font-size: 14px;
+      color: #888;
       text-align: center;
-      padding: 12px 8px;
+      padding: 16px 8px;
+    }
+
+    /* ===== SECTION LABEL ===== */
+    .dd-section-label {
+      padding: 4px 0;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ===== SETTINGS ===== */
+    .settings-label {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 6px;
     }
     select {
       width: 100%;
-      padding: 6px;
-      border: 1px solid #E8E2D9;
-      border-radius: 4px;
-      margin-bottom: 10px;
-      font-size: 12px;
+      padding: 10px 12px;
+      border: 1.5px solid rgba(0, 0, 0, 0.08);
+      border-radius: 10px;
+      margin-bottom: 12px;
+      font-size: 15px;
+      font-family: 'Nunito', sans-serif;
+      background: #fff;
+      color: #3d3d3a;
     }
-    .settings-label { font-size: 12px; color: #666; margin-bottom: 4px; }
+
+    /* ===== TOGGLE SWITCH ===== */
+    .dd-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+    }
+    .dd-toggle-label {
+      font-size: 15px;
+      font-weight: 600;
+      color: #3d3d3a;
+    }
+    .dd-toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+    }
+    .dd-toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .dd-toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #ccc;
+      border-radius: 24px;
+      transition: 0.2s;
+    }
+    .dd-toggle-slider:before {
+      content: "";
+      position: absolute;
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+    .dd-toggle input:checked + .dd-toggle-slider {
+      background: #1D9E75;
+    }
+    .dd-toggle input:checked + .dd-toggle-slider:before {
+      transform: translateX(20px);
+    }
+
+    /* ===== SAVED ITEMS ===== */
+    .dd-saved-item {
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+      font-size: 14px;
+    }
+    .dd-saved-item-name {
+      font-weight: 600;
+      color: #3d3d3a;
+    }
+    .dd-saved-item-meta {
+      color: #888;
+      font-size: 13px;
+    }
+    .dd-saved-item-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .dd-saved-item-actions a {
+      font-size: 13px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .dd-item-link { color: #1D9E75; }
+    .dd-item-remove { color: #E8954A; }
+
+    /* ===== DARK MODE ===== */
+    @media (prefers-color-scheme: dark) {
+      body { background: #1e1e1c; color: #e8e6e1; }
+      #auth-screen input { background: #2a2a28; border-color: rgba(255,255,255,0.1); color: #e8e6e1; }
+      .dd-wordmark { color: #e8e6e1; }
+      .dd-toggle-label { color: #e8e6e1; }
+      .dd-saved-item-name { color: #e8e6e1; }
+      select { background: #2a2a28; border-color: rgba(255,255,255,0.1); color: #e8e6e1; }
+      .tab-bar { border-color: rgba(255,255,255,0.06); }
+      #signed-in-bar { border-color: rgba(255,255,255,0.06); }
+      .dd-saved-item { border-color: rgba(255,255,255,0.06); }
+    }
   </style>
 </head>
 <body>
 
   <!-- Auth screen -->
   <div id="auth-screen">
-    <h2>Sign in to sync your points</h2>
+    <h2>Sign in to sync your progress</h2>
     <input type="email" id="auth-email" placeholder="Email" autocomplete="email" />
     <input type="password" id="auth-password" placeholder="Password" autocomplete="current-password" />
     <p id="auth-error"></p>
@@ -159,20 +325,24 @@
   <!-- Main screen -->
   <div id="main-screen" style="display:none;">
 
+    <!-- Header -->
+    <div class="dd-header">
+      <span class="dd-wordmark">Dopamine Delay</span>
+      <div class="dd-status">
+        <span class="dd-status-dot" id="status-dot"></span>
+        <span id="status-label">Active</span>
+      </div>
+    </div>
+
     <!-- Signed in bar -->
     <div id="signed-in-bar">
       <span id="user-email"></span>
       <a id="link-signout">Sign out</a>
     </div>
 
-    <!-- Points hero -->
-    <div class="points-hero">
-      <div class="points-number" id="points-display">0</div>
-      <div class="points-label">Delay Points</div>
-      <div class="stats-row">
-        <span>🔥 <span id="streak-display">0</span> day streak</span>
-        <span>⏸ <span id="pauses-display">0</span> pauses</span>
-      </div>
+    <!-- Today stats -->
+    <div class="dd-today-stats">
+      <span id="pauses-display">0</span> pauses today · <span id="points-display">0</span> points · <span id="streak-display">0</span> day streak
     </div>
 
     <!-- Tab bar -->
@@ -184,39 +354,41 @@
 
     <!-- Today panel -->
     <div class="tab-panel active" id="panel-today">
-      <div class="empty-state">Your pauses will appear here as you shop. 🛒</div>
-      <a class="dashboard-link" href="https://dopaminedelay.com/dashboard" target="_blank">
-        View full dashboard →
+      <div class="empty-state">Your pauses will appear here as you shop.</div>
+      <a class="dd-link" href="https://dopaminedelay.com/dashboard" target="_blank">
+        View your history &rarr;
       </a>
     </div>
 
     <!-- Saved panel -->
     <div class="tab-panel" id="panel-saved">
-      <div style="padding: 8px 12px 4px; font-size: 11px; font-weight: 600; color: #2A7D6B; text-transform: uppercase; letter-spacing: 0.5px;">
-        ⚡ Impulse saves
+      <div class="dd-section-label" style="color: #1D9E75;">Impulse saves</div>
+      <div id="saved-list">
+        <div class="empty-state">Nothing saved yet.</div>
       </div>
-      <div id="saved-list" style="font-size:12px; color:#999; text-align:center; padding:8px;">
-        Nothing saved yet.
-      </div>
-      <div style="padding: 8px 12px 4px; font-size: 11px; font-weight: 600; color: #C9921A; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">
-        📋 Planned purchases
-      </div>
-      <div id="planned-list" style="font-size:12px; color:#999; text-align:center; padding:8px;">
-        Nothing planned yet.
+      <div class="dd-section-label" style="color: #E8954A; margin-top: 12px;">Planned purchases</div>
+      <div id="planned-list">
+        <div class="empty-state">Nothing planned yet.</div>
       </div>
     </div>
 
     <!-- Settings panel -->
     <div class="tab-panel" id="panel-settings">
+      <div class="dd-toggle-row">
+        <span class="dd-toggle-label">Pause protection</span>
+        <label class="dd-toggle">
+          <input type="checkbox" id="dd-enabled-toggle" checked>
+          <span class="dd-toggle-slider"></span>
+        </label>
+      </div>
       <div class="settings-label">Pause duration</div>
       <select id="pause-duration">
         <option value="10">10 seconds</option>
         <option value="30">30 seconds</option>
         <option value="60">60 seconds</option>
       </select>
-      <a class="dashboard-link" href="https://dopaminedelay.com/dashboard" target="_blank"
-         style="background:#F5F0E8;color:#2A7D6B;border:1px solid #2A7D6B;">
-        Account settings →
+      <a class="dd-link" href="https://dopaminedelay.com/dashboard" target="_blank">
+        Account settings &rarr;
       </a>
     </div>
 

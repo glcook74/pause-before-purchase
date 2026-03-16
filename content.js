@@ -198,7 +198,7 @@
     if (darkPatterns.length > 0) {
       darkPatternHTML = `
         <div class="dd-dark-pattern-banner">
-          <strong>Heads up:</strong> this page is using urgency tactics. You have more time than it seems.
+          <strong>Just so you know:</strong> this page is using urgency tactics. You have more time than it feels.
         </div>
       `;
     }
@@ -218,9 +218,9 @@
       <div class="dd-modal">
         <button class="dd-close-btn" title="Close" aria-label="Close">&times;</button>
         ${darkPatternHTML}
-        <h2 class="dd-heading">Before you buy</h2>
+        <h2 class="dd-heading">Pause before you pay</h2>
         ${purchaseInfoHTML}
-        <p class="dd-question">Quick check — what kind of purchase is this?</p>
+        <p class="dd-question">What kind of purchase is this?</p>
         <div class="dd-choices">
           <button class="dd-choice-card" data-type="necessary">
             <span class="dd-choice-icon">✅</span>
@@ -244,7 +244,7 @@
             </span>
           </button>
         </div>
-        <p class="dd-honesty">Be honest — it helps.</p>
+        <p class="dd-honesty">No wrong answers — just helps us help you.</p>
       </div>
     `;
 
@@ -312,8 +312,8 @@
     modal.innerHTML = `
       <div class="dd-affirmation">
         <span class="dd-affirmation-icon">💚</span>
-        <p class="dd-affirmation-text">Good thinking. You've got this.</p>
-        <p class="dd-affirmation-sub">Your choice, always.</p>
+        <p class="dd-affirmation-text">Nice one. You've got this.</p>
+        <p class="dd-affirmation-sub">Your call, always.</p>
       </div>
     `;
 
@@ -395,7 +395,7 @@
     modal.innerHTML = `
       <button class="dd-close-btn" title="Close" aria-label="Close">&times;</button>
       <h2 class="dd-heading">One quick thing...</h2>
-      <p class="dd-subheading">What is driving this right now? No judgment — just helps us help you.</p>
+      <p class="dd-subheading">What is driving this right now? No wrong answers — just helps us help you.</p>
       <div class="dd-choices" style="gap:8px;">
         <button class="dd-choice-card dd-emotion-btn" data-emotion="stress">
           <span class="dd-choice-icon">😤</span>
@@ -511,8 +511,8 @@
 
     modal.innerHTML = `
       <button class="dd-close-btn" title="Close" aria-label="Close">&times;</button>
-      <h2 class="dd-heading">Let's redirect that energy</h2>
-      <p class="dd-subheading">Your brain wants dopamine. Here are some ways to get it without spending.</p>
+      <h2 class="dd-heading">Take a breath</h2>
+      <p class="dd-subheading">Your brain wants a hit of something. Here are some ways to get it without spending.</p>
 
       <div class="dd-alternatives-grid">
         ${altTilesHTML}
@@ -529,9 +529,9 @@
         </div>
       </div>
 
-      <button class="dd-save-btn" id="dd-save-btn">Save for later</button>
+      <button class="dd-save-btn" id="dd-save-btn">Keep waiting — save for later</button>
       ${priceNum > 50 ? '<button class="dd-save-btn" id="dd-sleep-btn" style="background: #C9921A; margin-top: 8px;">🌙 Sleep on it — remind me tomorrow</button>' : ''}
-      <button class="dd-proceed-link" id="dd-proceed" disabled>Wait for pause to finish...</button>
+      <button class="dd-proceed-link" id="dd-proceed" disabled>Take a breath. You can always come back.</button>
     `;
 
     // Close button
@@ -557,8 +557,8 @@
         if (timerEl) timerEl.textContent = '0';
         if (proceedBtn) {
           proceedBtn.disabled = false;
-          proceedBtn.textContent = 'Continue to purchase — your choice';
-          proceedBtn.style.color = '#6B6459';
+          proceedBtn.textContent = 'I still want to buy';
+          proceedBtn.style.color = '#888';
         }
       }
     }, 1000);

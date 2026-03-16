@@ -58,6 +58,29 @@ async function init() {
   } else {
     showAuthScreen();
   }
+
+  // Pause protection toggle
+  const toggle = document.getElementById('dd-enabled-toggle');
+  if (toggle) {
+    const { dd_paused } = await chrome.storage.local.get('dd_paused');
+    toggle.checked = !dd_paused;
+    updateStatusDot(!dd_paused);
+    toggle.addEventListener('change', async () => {
+      await chrome.storage.local.set({ dd_paused: !toggle.checked });
+      updateStatusDot(toggle.checked);
+    });
+  }
+}
+
+function updateStatusDot(active) {
+  const dot = document.getElementById('status-dot');
+  const label = document.getElementById('status-label');
+  if (dot) {
+    dot.className = 'dd-status-dot' + (active ? '' : ' paused');
+  }
+  if (label) {
+    label.textContent = active ? 'Active' : 'Paused';
+  }
 }
 
 function showAuthScreen() {
@@ -160,7 +183,7 @@ passwordInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') btnSignin.click();
 });
 
-// Create account → open signup page
+// Create account
 linkSignup.addEventListener('click', () => {
   chrome.tabs.create({ url: 'https://dopaminedelay.com/signup' });
 });
@@ -186,6 +209,8 @@ linkSignout.addEventListener('click', async () => {
   ]);
   showAuthScreen();
 });
+
+// Tabs
 function showTab(tab) {
   ['today','saved','settings'].forEach(t => {
     document.getElementById('panel-'+t).classList.toggle('active', t===tab);
@@ -214,15 +239,15 @@ async function loadDashboardData() {
   const savedItems = data.dd_saved_items || [];
   if (savedList) {
     if (savedItems.length === 0) {
-      savedList.innerHTML = '<div style="font-size:12px;color:#999;text-align:center;padding:8px;">Nothing saved yet.</div>';
+      savedList.innerHTML = '<div class="empty-state">Nothing saved yet.</div>';
     } else {
       savedList.innerHTML = savedItems.map((item, i) => `
-        <div style="padding:8px 12px;border-bottom:1px solid #E8E2D9;font-size:12px;">
-          <div style="font-weight:600;color:#1a1a1a;">${item.product || 'Unknown item'}</div>
-          <div style="color:#666;">${item.site || ''}${item.price ? ' · ' + item.price : ''}</div>
-          <div style="display:flex;gap:8px;margin-top:4px;">
-            ${item.url ? '<a href="' + item.url + '" target="_blank" style="color:#2A7D6B;text-decoration:none;">View</a>' : ''}
-            <a class="dd-remove-saved" data-index="${i}" style="color:#c0392b;cursor:pointer;text-decoration:none;">Remove</a>
+        <div class="dd-saved-item">
+          <div class="dd-saved-item-name">${item.product || 'Unknown item'}</div>
+          <div class="dd-saved-item-meta">${item.site || ''}${item.price ? ' · ' + item.price : ''}</div>
+          <div class="dd-saved-item-actions">
+            ${item.url ? '<a href="' + item.url + '" target="_blank" class="dd-item-link">View</a>' : ''}
+            <a class="dd-item-remove dd-remove-saved" data-index="${i}">Remove</a>
           </div>
         </div>
       `).join('');
@@ -245,15 +270,15 @@ async function loadDashboardData() {
   const plannedItems = data.dd_planned_items || [];
   if (plannedList) {
     if (plannedItems.length === 0) {
-      plannedList.innerHTML = '<div style="font-size:12px;color:#999;text-align:center;padding:8px;">Nothing planned yet.</div>';
+      plannedList.innerHTML = '<div class="empty-state">Nothing planned yet.</div>';
     } else {
       plannedList.innerHTML = plannedItems.map((item, i) => `
-        <div style="padding:8px 12px;border-bottom:1px solid #E8E2D9;font-size:12px;">
-          <div style="font-weight:600;color:#1a1a1a;">${item.product || 'Unknown item'}</div>
-          <div style="color:#666;">${item.site || ''}${item.price ? ' · ' + item.price : ''}</div>
-          <div style="display:flex;gap:8px;margin-top:4px;">
-            ${item.url ? '<a href="' + item.url + '" target="_blank" style="color:#C9921A;text-decoration:none;">View</a>' : ''}
-            <a class="dd-remove-planned" data-index="${i}" style="color:#c0392b;cursor:pointer;text-decoration:none;">Remove</a>
+        <div class="dd-saved-item">
+          <div class="dd-saved-item-name">${item.product || 'Unknown item'}</div>
+          <div class="dd-saved-item-meta">${item.site || ''}${item.price ? ' · ' + item.price : ''}</div>
+          <div class="dd-saved-item-actions">
+            ${item.url ? '<a href="' + item.url + '" target="_blank" class="dd-item-link">View</a>' : ''}
+            <a class="dd-item-remove dd-remove-planned" data-index="${i}">Remove</a>
           </div>
         </div>
       `).join('');
@@ -271,5 +296,6 @@ async function loadDashboardData() {
     }
   }
 }
+
 // Init on popup open
 init();
