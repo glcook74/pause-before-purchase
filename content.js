@@ -18,7 +18,7 @@
   const SHOPPING_DOMAINS = [
     'amazon.co.uk', 'asos.com', 'ebay.co.uk', 'argos.co.uk',
     'tesco.com', 'boots.com', 'johnlewis.com', 'currys.co.uk',
-    'shein.co.uk', 'shein.com', 'klarna.com'
+    'shein.co.uk', 'shein.com', 'klarna.com','very'
   ];
 
   const DARK_PATTERN_PHRASES = [
