@@ -44,7 +44,7 @@ async function syncPauseEvent(data) {
     }
 
     const newLongest = Math.max(newStreak, profile.longest_streak);
-    const pointsEarned = data.points_earned || 0;
+    const pointsEarned = data.pointsEarned || data.points_earned || 0;
     const priceSaved = data.outcome === 'saved' && data.price ? parseFloat(data.price) : 0;
 
     // 3. Update profile
@@ -69,7 +69,7 @@ async function syncPauseEvent(data) {
       site: data.site,
       product: data.product || null,
       price: data.price ? parseFloat(data.price) : null,
-      choice_type: data.choice_type,
+      choice_type: data.choiceType || data.choice_type,
       outcome: data.outcome,
       points_earned: pointsEarned,
       alternative_chosen: data.alternative_chosen || null,

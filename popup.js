@@ -198,7 +198,7 @@ document.getElementById('tab-saved').addEventListener('click', () => showTab('sa
 document.getElementById('tab-settings').addEventListener('click', () => showTab('settings'));
 
 async function loadDashboardData() {
-  const data = await chrome.storage.local.get(['dd_points','dd_streak','dd_pauses_today']);
+  const data = await chrome.storage.local.get(['dd_points','dd_streak','dd_pauses_today','dd_saved_items']);
   const pts = data.dd_points || 0;
   const streakData = data.dd_streak;
   const streak = typeof streakData === 'object' ? (streakData?.count || 0) : (streakData || 0);
@@ -207,6 +207,37 @@ async function loadDashboardData() {
     document.getElementById('points-display').textContent = pts;
     document.getElementById('streak-display').textContent = streak;
     document.getElementById('pauses-display').textContent = pauses;
+  }
+
+  // Render saved items
+  const savedList = document.getElementById('saved-list');
+  const savedItems = data.dd_saved_items || [];
+  if (savedList) {
+    if (savedItems.length === 0) {
+      savedList.innerHTML = '<div class="empty-state">Items you save for later appear here.</div>';
+    } else {
+      savedList.innerHTML = savedItems.map((item, i) => `
+        <div style="padding:8px 0;border-bottom:1px solid #E8E2D9;font-size:12px;">
+          <div style="font-weight:600;color:#1a1a1a;">${item.product || 'Unknown item'}</div>
+          <div style="color:#666;">${item.site || ''}${item.price ? ' · ' + item.price : ''}${item.type ? ' · ' + item.type : ''}</div>
+          <div style="display:flex;gap:8px;margin-top:4px;">
+            ${item.url ? '<a href="' + item.url + '" target="_blank" style="color:#2A7D6B;text-decoration:none;">View</a>' : ''}
+            <a class="dd-remove-saved" data-index="${i}" style="color:#c0392b;cursor:pointer;text-decoration:none;">Remove</a>
+          </div>
+        </div>
+      `).join('');
+      savedList.querySelectorAll('.dd-remove-saved').forEach(link => {
+        link.addEventListener('click', async () => {
+          const idx = parseInt(link.dataset.index);
+          const { dd_saved_items: items } = await chrome.storage.local.get('dd_saved_items');
+          if (items) {
+            items.splice(idx, 1);
+            await chrome.storage.local.set({ dd_saved_items: items });
+            loadDashboardData();
+          }
+        });
+      });
+    }
   }
 }
 // Init on popup open
