@@ -24,6 +24,12 @@ chrome.runtime.onInstalled.addListener(async () => {
     });
   }
 
+  // Initialise dd_points if not already set
+  const { dd_points } = await chrome.storage.local.get('dd_points');
+  if (dd_points === undefined) {
+    await chrome.storage.local.set({ dd_points: 0 });
+  }
+
   await retrySyncQueue();
   await checkProStatus();
 });

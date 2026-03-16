@@ -20,7 +20,7 @@ function getPopupClient() {
   popupSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
       autoRefreshToken: true,
-      persistSession: false,
+      persistSession: true,
       detectSessionInUrl: false,
     },
   });
@@ -29,6 +29,20 @@ function getPopupClient() {
 
 // Check if user is already signed in or in local-only mode
 async function init() {
+  // Restore Supabase session from storage
+  const { dd_session } = await chrome.storage.local.get('dd_session');
+  const client = getPopupClient();
+  if (dd_session && client) {
+    try {
+      await client.auth.setSession({
+        access_token: dd_session.access_token,
+        refresh_token: dd_session.refresh_token
+      });
+    } catch (e) {
+      console.warn('DD: session restore failed', e);
+    }
+  }
+
   const { dd_user_id, dd_local_only } = await chrome.storage.local.get([
     'dd_user_id',
     'dd_local_only',

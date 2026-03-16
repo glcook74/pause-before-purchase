@@ -35,27 +35,36 @@
   // ===== INITIALISATION =====
 
   async function init() {
-    // Check if onboarded
-  const { dd_onboarded } = await chrome.storage.local.get('dd_onboarded');const onboarded = dd_onboarded || false;
-    if (!onboarded) return;
+    try {
+      console.log('DD: content script loaded', window.location.href);
 
-    // Check if this site is disabled
-    const hostname = window.location.hostname.replace(/^www\./, '');
-    const { dd_disabled_sites } = await chrome.storage.local.get('dd_disabled_sites');
-    const disabledSites = dd_disabled_sites || [];
-    if (disabledSites.includes(hostname)) return;
+      // Check if onboarded
+      const { dd_onboarded } = await chrome.storage.local.get('dd_onboarded');
+      const onboarded = dd_onboarded || false;
+      if (!onboarded) return;
 
-    // Check if this is a checkout page
-    if (isCheckoutPage()) {
-      showOverlay();
-    }
+      // Check if this site is disabled
+      const hostname = window.location.hostname.replace(/^www\./, '');
+      const { dd_disabled_sites } = await chrome.storage.local.get('dd_disabled_sites');
+      const disabledSites = dd_disabled_sites || [];
+      if (disabledSites.includes(hostname)) return;
 
-    // Also listen for messages from background script
-    chrome.runtime.onMessage.addListener((message) => {
-      if (message.type === 'DD_CHECKOUT_DETECTED' && !overlayActive) {
+      // Check if this is a checkout page
+      console.log('DD: isCheckout =', isCheckoutPage());
+      if (isCheckoutPage()) {
+        console.log('DD: triggering overlay');
         showOverlay();
       }
-    });
+
+      // Also listen for messages from background script
+      chrome.runtime.onMessage.addListener((message) => {
+        if (message.type === 'DD_CHECKOUT_DETECTED' && !overlayActive) {
+          showOverlay();
+        }
+      });
+    } catch (e) {
+      console.error('DD: init() failed', e);
+    }
   }
 
   function isCheckoutPage() {
