@@ -172,12 +172,16 @@ linkSignout.addEventListener('click', async () => {
   ]);
   showAuthScreen();
 });
-window.showTab = function(tab) {
+function showTab(tab) {
   ['today','saved','settings'].forEach(t => {
     document.getElementById('panel-'+t).classList.toggle('active', t===tab);
     document.getElementById('tab-'+t).classList.toggle('active', t===tab);
   });
 }
+
+document.getElementById('tab-today').addEventListener('click', () => showTab('today'));
+document.getElementById('tab-saved').addEventListener('click', () => showTab('saved'));
+document.getElementById('tab-settings').addEventListener('click', () => showTab('settings'));
 
 async function loadDashboardData() {
   const data = await chrome.storage.local.get(['dd_points','dd_streak','dd_pauses_today']);
