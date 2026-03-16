@@ -38,6 +38,9 @@
     try {
       console.log('DD: content script loaded', window.location.href);
 
+      // Set the active user so all DDStorage reads/writes are scoped correctly
+      await DDStorage.initActiveUser();
+
       // Check if onboarded
       const { dd_onboarded } = await chrome.storage.local.get('dd_onboarded');
       // Default to true so overlay works without completing onboarding
@@ -46,8 +49,7 @@
 
       // Check if this site is disabled
       const hostname = window.location.hostname.replace(/^www\./, '');
-      const { dd_disabled_sites } = await chrome.storage.local.get('dd_disabled_sites');
-      const disabledSites = dd_disabled_sites || [];
+      const disabledSites = await DDStorage.getDisabledSites();
       if (disabledSites.includes(hostname)) return;
 
       // Check if this is a checkout page
@@ -85,6 +87,75 @@
 
   // ===== PRODUCT EXTRACTION =====
 
+  const BASKET_PATH_PATTERN = /\/(cart|basket|gp\/cart)\b/i;
+
+  function isBasketPage() {
+    return BASKET_PATH_PATTERN.test(window.location.pathname);
+  }
+
+  /**
+   * Search the page for an element whose visible text contains one of the
+   * total-related keywords, then extract the price from it or a nearby sibling.
+   * Returns the matched price string or null.
+   */
+  function getTotalFromPage() {
+    const keywords = ['subtotal', 'order total', 'basket total', 'cart total', 'total'];
+    const priceRe = /[£$€]\s*[\d,.]+/;
+
+    // Walk every element with short, visible text — likely a label
+    const candidates = document.querySelectorAll(
+      'span, div, p, td, th, dt, dd, strong, b, h2, h3, h4, label'
+    );
+
+    let bestPrice = null;
+    let bestValue = 0;
+
+    for (const el of candidates) {
+      const text = el.textContent.trim().toLowerCase();
+      if (text.length > 80) continue; // skip large blocks
+
+      const matchesKeyword = keywords.some(kw => text.includes(kw));
+      if (!matchesKeyword) continue;
+
+      // Try to extract a price from this element or its parent
+      const searchTargets = [el, el.parentElement];
+      for (const target of searchTargets) {
+        if (!target) continue;
+        const m = target.textContent.match(priceRe);
+        if (m) {
+          const numStr = m[0].replace(/[^0-9.]/g, '');
+          const num = parseFloat(numStr);
+          if (!isNaN(num) && num > bestValue) {
+            bestPrice = m[0];
+            bestValue = num;
+          }
+        }
+      }
+    }
+
+    return bestPrice;
+  }
+
+  /**
+   * Count items visible in a basket / cart page.
+   */
+  function getBasketItemCount() {
+    const itemSelectors = [
+      '.sc-list-item',                           // Amazon
+      '.cart-item', '.basket-item',
+      '[class*="cart-item"]', '[class*="basket-item"]',
+      '[data-testid="cart-item"]',
+      '.bag-item',                               // ASOS
+      '.product-list-item',
+    ];
+
+    for (const selector of itemSelectors) {
+      const items = document.querySelectorAll(selector);
+      if (items.length > 0) return items.length;
+    }
+    return 0;
+  }
+
   function extractProductInfo() {
     const info = {
       product: '',
@@ -92,47 +163,100 @@
       site: window.location.hostname.replace(/^www\./, '')
     };
 
-    // Try common product name selectors
-    const productSelectors = [
-      '#productTitle',                           // Amazon
-      'h1[data-test-id="product-title"]',        // ASOS
-      '.product-title h1', '.product-title',     // Generic
-      'h1.product-name', '.product-name h1',
-      '[data-testid="product-title"]',
-      '.item-title', '#itemTitle',               // eBay
-      'h1[itemprop="name"]',
-      '.product-details h1',
-      'h1'
-    ];
+    const onBasketPage = isBasketPage();
 
-    for (const selector of productSelectors) {
-      const el = document.querySelector(selector);
-      if (el && el.textContent.trim().length > 2 && el.textContent.trim().length < 200) {
-        info.product = el.textContent.trim().substring(0, 100);
-        break;
+    // --- Product name ---
+    if (onBasketPage) {
+      const count = getBasketItemCount();
+      info.product = count > 0
+        ? `${count} item${count === 1 ? '' : 's'} in your basket`
+        : 'Items in your basket';
+    } else {
+      const productSelectors = [
+        '#productTitle',                           // Amazon
+        'h1[data-test-id="product-title"]',        // ASOS
+        '.product-title h1', '.product-title',     // Generic
+        'h1.product-name', '.product-name h1',
+        '[data-testid="product-title"]',
+        '.item-title', '#itemTitle',               // eBay
+        'h1[itemprop="name"]',
+        '.product-details h1',
+        'h1'
+      ];
+
+      for (const selector of productSelectors) {
+        const el = document.querySelector(selector);
+        if (el && el.textContent.trim().length > 2 && el.textContent.trim().length < 200) {
+          info.product = el.textContent.trim().substring(0, 100);
+          break;
+        }
       }
     }
 
-    // Try common price selectors
-    const priceSelectors = [
-      '.a-price .a-offscreen',                   // Amazon
-      '[data-test-id="current-price"]',          // ASOS
-      '.current-price', '.product-price',
-      '#prcIsum', '.display-price',              // eBay
-      '[itemprop="price"]',
-      '.price-current', '.sale-price',
-      '.product-price-amount',
-      '.price'
-    ];
+    // --- Price ---
+    // On basket/cart pages, try to find the order total first
+    if (onBasketPage) {
+      // 1. Try specific basket-total selectors
+      const basketTotalSelectors = [
+        // Amazon basket total
+        '#sc-subtotal-amount-activecart .a-color-price',
+        '#sc-subtotal-amount-buybox .a-color-price',
+        '.sc-cart-header-total-price',
+        '[data-testid="cart-subtotal"]',
+        // Generic basket totals
+        '.basket-total .price',
+        '.cart-total .price',
+        '.order-total .price',
+        '.subtotal-price',
+        '#cart-subtotal',
+        '.cart-subtotal',
+        '[class*="subtotal"]',
+        '[class*="cart-total"]',
+        '[class*="basket-total"]',
+        '[class*="order-total"]',
+      ];
 
-    for (const selector of priceSelectors) {
-      const el = document.querySelector(selector);
-      if (el) {
-        const text = el.textContent.trim();
-        const priceMatch = text.match(/[£$€]\s*[\d,.]+/);
-        if (priceMatch) {
-          info.price = priceMatch[0];
-          break;
+      for (const selector of basketTotalSelectors) {
+        const el = document.querySelector(selector);
+        if (el) {
+          const text = el.textContent.trim();
+          const priceMatch = text.match(/[£$€]\s*[\d,.]+/);
+          if (priceMatch) {
+            info.price = priceMatch[0];
+            break;
+          }
+        }
+      }
+
+      // 2. If no selector matched, do a text-based search for "Total" / "Subtotal"
+      if (!info.price) {
+        const totalPrice = getTotalFromPage();
+        if (totalPrice) info.price = totalPrice;
+      }
+    }
+
+    // 3. Fall back to individual item price selectors (always used on non-basket pages)
+    if (!info.price) {
+      const priceSelectors = [
+        '.a-price .a-offscreen',                   // Amazon
+        '[data-test-id="current-price"]',          // ASOS
+        '.current-price', '.product-price',
+        '#prcIsum', '.display-price',              // eBay
+        '[itemprop="price"]',
+        '.price-current', '.sale-price',
+        '.product-price-amount',
+        '.price'
+      ];
+
+      for (const selector of priceSelectors) {
+        const el = document.querySelector(selector);
+        if (el) {
+          const text = el.textContent.trim();
+          const priceMatch = text.match(/[£$€]\s*[\d,.]+/);
+          if (priceMatch) {
+            info.price = priceMatch[0];
+            break;
+          }
         }
       }
     }
@@ -181,8 +305,7 @@
 
     const productInfo = extractProductInfo();
     const darkPatterns = detectDarkPatterns();
-    const { dd_settings } = await chrome.storage.local.get('dd_settings');
-    const settings = dd_settings || { theme: 'cream', pauseDuration: 10 };
+    const settings = await DDStorage.getSettings();
 
     // Record pause
     /* pauses tracked via storage */
@@ -271,8 +394,7 @@
       card.addEventListener('click', async () => {
         const type = card.dataset.type;
         // +5 points for completing classification
-        const { dd_points: p1 } = await chrome.storage.local.get('dd_points');
-        await chrome.storage.local.set({ dd_points: (p1 || 0) + 5 });
+        await DDStorage.addPoints(5);
 
         // Track streak and daily pauses
         await DDStorage.recordPauseForStreak();
@@ -353,20 +475,13 @@
 
     modal.querySelector('#dd-planned-save')
       .addEventListener('click', async () => {
-        const { dd_planned_items: pi } = await chrome.storage.local.get('dd_planned_items');
-        const plannedItems = pi || [];
-        plannedItems.push({
+        await DDStorage.savePlannedItem({
           product: productInfo.product,
           site: productInfo.site,
           price: productInfo.price,
           url: window.location.href,
-          savedAt: new Date().toISOString(),
-          status: 'pending',
-          type: 'planned'
         });
-        await chrome.storage.local.set({ dd_planned_items: plannedItems });
-        const { dd_points: p } = await chrome.storage.local.get('dd_points');
-        await chrome.storage.local.set({ dd_points: (p || 0) + 15 });
+        await DDStorage.addPoints(15);
         chrome.runtime.sendMessage({
           type: 'PAUSE_EVENT',
           data: {
@@ -434,10 +549,8 @@
     modal.querySelectorAll('.dd-emotion-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const emotion = btn.dataset.emotion;
-        // Store emotion for analytics
-        chrome.storage.local.get('dd_last_emotion').then(() => {
-          chrome.storage.local.set({ dd_last_emotion: emotion });
-        });
+        // Store emotion for analytics (scoped to user)
+        DDStorage.set(DDStorage.KEYS.LAST_EMOTION, emotion);
         showScreen2(overlay, productInfo, settings, emotion);
       });
     });
@@ -581,19 +694,13 @@
 
     // Save for later
     document.getElementById('dd-save-btn').addEventListener('click', async () => {
-      const { dd_saved_items: si } = await chrome.storage.local.get('dd_saved_items');
-      const savedItems = si || [];
-      savedItems.push({
+      await DDStorage.saveItem({
         product: productInfo.product,
         site: productInfo.site,
         price: productInfo.price,
         url: window.location.href,
-        savedAt: new Date().toISOString(),
-        status: 'pending'
       });
-      await chrome.storage.local.set({ dd_saved_items: savedItems });
-      const { dd_points: p2 } = await chrome.storage.local.get('dd_points');
-      await chrome.storage.local.set({ dd_points: (p2 || 0) + 15 });
+      await DDStorage.addPoints(15);
 
       // Sync to Supabase via background
       chrome.runtime.sendMessage({
@@ -616,20 +723,15 @@
     const sleepBtn = document.getElementById('dd-sleep-btn');
     if (sleepBtn) {
       sleepBtn.addEventListener('click', async () => {
-        const reminder = {
+        await DDStorage.addReminder({
           product: productInfo.product,
           site: productInfo.site,
           price: productInfo.price,
           url: window.location.href,
           remindAt: new Date(Date.now() + 86400000).toISOString()
-        };
-        const { dd_reminders: existing } = await chrome.storage.local.get('dd_reminders');
-        const reminders = existing || [];
-        reminders.push(reminder);
-        await chrome.storage.local.set({ dd_reminders: reminders });
+        });
         showPointsToast('Reminder set! +10 Delay Points 🌙');
-        const { dd_points: p3 } = await chrome.storage.local.get('dd_points');
-        await chrome.storage.local.set({ dd_points: (p3 || 0) + 10 });
+        await DDStorage.addPoints(10);
         closeOverlay(overlay);
       });
     }
