@@ -12,13 +12,14 @@
 
   const CHECKOUT_URL_PATTERNS = [
     /\/checkout/i, /\/basket/i, /\/cart/i, /\/payment/i,
-    /\/order-confirm/i, /\/buy-now/i, /\/order.*confirm/i, /\/pay\b/i
+    /\/order-confirm/i, /\/buy-now/i, /\/order.*confirm/i, /\/pay\b/i,
+    /\/gp\/buy/i, /\/spc\//i, /place.*order/i
   ];
 
   const SHOPPING_DOMAINS = [
-    'amazon.co.uk', 'asos.com', 'ebay.co.uk', 'argos.co.uk',
+    'amazon.co.uk', 'amazon.com', 'asos.com', 'ebay.co.uk', 'argos.co.uk',
     'tesco.com', 'boots.com', 'johnlewis.com', 'currys.co.uk',
-    'shein.co.uk', 'shein.com', 'klarna.com','very'
+    'shein.co.uk', 'shein.com', 'klarna.com', 'very.co.uk', 'next.co.uk'
   ];
 
   const DARK_PATTERN_PHRASES = [
@@ -58,7 +59,6 @@
   }
 
   function isCheckoutPage() {
-    const url = window.location.href;
     const hostname = window.location.hostname.replace(/^www\./, '');
 
     const isShoppingSite = SHOPPING_DOMAINS.some(domain =>
@@ -66,10 +66,11 @@
     );
 
     const hasCheckoutPath = CHECKOUT_URL_PATTERNS.some(pattern =>
-      pattern.test(window.location.pathname)
+      pattern.test(window.location.pathname + window.location.search)
     );
 
-    return isShoppingSite || hasCheckoutPath;
+    // Fire on ANY site with a checkout URL pattern, or any known shopping site
+    return hasCheckoutPath || isShoppingSite;
   }
 
   // ===== PRODUCT EXTRACTION =====
