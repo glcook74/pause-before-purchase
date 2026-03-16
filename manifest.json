@@ -25,6 +25,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
+      "css": ["overlay.css"],
       "js": ["lib/storage.js", "content.js"],
       "run_at": "document_idle"
     }

@@ -200,7 +200,8 @@ document.getElementById('tab-settings').addEventListener('click', () => showTab(
 async function loadDashboardData() {
   const data = await chrome.storage.local.get(['dd_points','dd_streak','dd_pauses_today']);
   const pts = data.dd_points || 0;
-  const streak = data.dd_streak || 0;
+  const streakData = data.dd_streak;
+  const streak = typeof streakData === 'object' ? (streakData?.count || 0) : (streakData || 0);
   const pauses = data.dd_pauses_today?.count || 0;
   if (document.getElementById('points-display')) {
     document.getElementById('points-display').textContent = pts;

@@ -274,6 +274,23 @@
         const { dd_points: p1 } = await chrome.storage.local.get('dd_points');
         await chrome.storage.local.set({ dd_points: (p1 || 0) + 5 });
 
+        // Track streak and daily pauses
+        await DDStorage.recordPauseForStreak();
+        await DDStorage.incrementPausesToday();
+
+        // Sync to Supabase via background
+        chrome.runtime.sendMessage({
+          type: 'PAUSE_EVENT',
+          data: {
+            site: productInfo.site,
+            product: productInfo.product,
+            price: productInfo.price,
+            choiceType: type,
+            outcome: type === 'impulsive' ? 'redirected' : 'bought',
+            pointsEarned: 5,
+          },
+        });
+
         if (type === 'necessary' || type === 'planned') {
           showAffirmation(overlay);
           showPointsToast('+5 Delay Points');
@@ -410,6 +427,20 @@
       await chrome.storage.local.set({ dd_saved_items: savedItems });
       const { dd_points: p2 } = await chrome.storage.local.get('dd_points');
       await chrome.storage.local.set({ dd_points: (p2 || 0) + 15 });
+
+      // Sync to Supabase via background
+      chrome.runtime.sendMessage({
+        type: 'PAUSE_EVENT',
+        data: {
+          site: productInfo.site,
+          product: productInfo.product,
+          price: productInfo.price,
+          choiceType: 'impulsive',
+          outcome: 'saved',
+          pointsEarned: 15,
+        },
+      });
+
       showPointsToast('+15 Delay Points — brilliant pause!');
       closeOverlay(overlay);
     });
