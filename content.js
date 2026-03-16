@@ -40,8 +40,7 @@
 
     // Check if this site is disabled
     const hostname = window.location.hostname.replace(/^www\./, '');
-    const disabledSites = await DDStorage.getDisabledSites();
-    if (disabledSites.includes(hostname)) return;
+    const { dd_disabled_sites } = await chrome.storage.local.get('dd_disabled_sites'); const disabledSites = dd_disabled_sites || []; if (disabledSites.includes(hostname)) return;
 
     // Check if this is a checkout page
     if (isCheckoutPage()) {
