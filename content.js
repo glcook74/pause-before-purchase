@@ -291,9 +291,12 @@
           },
         });
 
-        if (type === 'necessary' || type === 'planned') {
+        if (type === 'necessary') {
           showAffirmation(overlay);
           showPointsToast('+5 Delay Points');
+        } else if (type === 'planned') {
+          showPointsToast('+5 Delay Points');
+          showPlannedScreen(overlay, productInfo);
         } else if (type === 'impulsive') {
           showPointsToast('+5 Delay Points');
           showScreen2(overlay, productInfo, settings);
@@ -317,6 +320,72 @@
     setTimeout(() => {
       closeOverlay(overlay);
     }, 2500);
+  }
+
+  // ===== PLANNED PURCHASE SCREEN =====
+
+  async function showPlannedScreen(overlay, productInfo) {
+    const modal = overlay.querySelector('.dd-modal');
+    modal.innerHTML = `
+      <button class="dd-close-btn" title="Close" aria-label="Close">&times;</button>
+      <h2 class="dd-heading">Good thinking.</h2>
+      <p class="dd-subheading">Since you have been planning this, do you want to save it to your list to buy at the right moment?</p>
+      <div class="dd-choices" style="margin-top: 16px;">
+        <button class="dd-choice-card" id="dd-planned-save">
+          <span class="dd-choice-icon">💾</span>
+          <span class="dd-choice-content">
+            <span class="dd-choice-label">SAVE TO MY LIST</span>
+            <span class="dd-choice-desc">I will buy it when the time is right</span>
+          </span>
+        </button>
+        <button class="dd-choice-card" id="dd-planned-buy">
+          <span class="dd-choice-icon">✅</span>
+          <span class="dd-choice-content">
+            <span class="dd-choice-label">BUY NOW</span>
+            <span class="dd-choice-desc">I am ready — this is the right moment</span>
+          </span>
+        </button>
+      </div>
+    `;
+
+    modal.querySelector('.dd-close-btn')
+      .addEventListener('click', () => closeOverlay(overlay));
+
+    modal.querySelector('#dd-planned-save')
+      .addEventListener('click', async () => {
+        const { dd_saved_items: si } = await chrome.storage.local.get('dd_saved_items');
+        const savedItems = si || [];
+        savedItems.push({
+          product: productInfo.product,
+          site: productInfo.site,
+          price: productInfo.price,
+          url: window.location.href,
+          savedAt: new Date().toISOString(),
+          status: 'pending',
+          type: 'planned'
+        });
+        await chrome.storage.local.set({ dd_saved_items: savedItems });
+        const { dd_points: p } = await chrome.storage.local.get('dd_points');
+        await chrome.storage.local.set({ dd_points: (p || 0) + 15 });
+        chrome.runtime.sendMessage({
+          type: 'PAUSE_EVENT',
+          data: {
+            site: productInfo.site,
+            product: productInfo.product,
+            price: productInfo.price,
+            choiceType: 'planned',
+            outcome: 'saved',
+            pointsEarned: 15
+          }
+        });
+        showPointsToast('+15 Delay Points — smart save!');
+        closeOverlay(overlay);
+      });
+
+    modal.querySelector('#dd-planned-buy')
+      .addEventListener('click', () => {
+        closeOverlay(overlay);
+      });
   }
 
   // ===== SCREEN 2: REDIRECT THAT ENERGY =====
