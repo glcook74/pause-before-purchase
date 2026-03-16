@@ -69,8 +69,8 @@
       pattern.test(window.location.pathname + window.location.search)
     );
 
-    // Fire on ANY site with a checkout URL pattern, or any known shopping site
-    return hasCheckoutPath || isShoppingSite;
+    // Fire on ANY site with a checkout URL pattern
+    return hasCheckoutPath;
   }
 
   // ===== PRODUCT EXTRACTION =====
@@ -298,7 +298,12 @@
     const modal = overlay.querySelector('.dd-modal');
     const { dd_profile } = await chrome.storage.local.get('dd_profile');
     const profile = dd_profile || 'impulsive';
-    const alternatives = DDAlternatives.getAlternatives(4, profile);
+    const alternatives = [
+      { id: 'spotify', icon: '🎵', category: 'Music', label: 'Open Spotify', action: 'external', url: 'https://open.spotify.com' },
+      { id: 'puzzle', icon: '🧩', category: 'Puzzle', label: 'Try Wordle', action: 'external', url: 'https://www.nytimes.com/games/wordle/index.html' },
+      { id: 'breathe', icon: '🌬️', category: 'Calm', label: 'Box breathing', action: 'inline', detail: 'Breathe in 4 counts. Hold 4. Out 4. Hold 4. Repeat 3 times.' },
+      { id: 'move', icon: '🏃', category: 'Movement', label: '2 min walk', action: 'inline', detail: 'Stand up. Walk around for 2 minutes. Come back and see if you still want it.' }
+    ];
     const pauseDuration = (settings && settings.pauseDuration) || 10;
 
     let remaining = pauseDuration;
