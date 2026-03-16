@@ -463,7 +463,7 @@
 
     // MOVEMENT — proven dopamine release
     { id: 'walk', icon: '🏃', category: 'Move', label: '2-minute walk', action: 'inline', detail: 'Stand up right now. Walk to another room, or outside if you can. Set a 2-minute timer. Physical movement raises dopamine naturally — this is not a trick, it is neuroscience.', tags: ['stress', 'bored', 'habit'] },
-    { id: 'dance', icon: '🕺', category: 'Move', label: 'Dance to one song', action: 'external', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', tags: ['bored', 'treat', 'habit'] },
+    { id: 'dance', icon: '🕺', category: 'Move', label: 'Watch something on YouTube', action: 'external', url: 'https://www.youtube.com', tags: ['bored', 'treat', 'habit'] },
     { id: 'stretch', icon: '🤸', category: 'Move', label: '5 stretches', action: 'inline', detail: '1. Roll your shoulders back 5 times. 2. Reach both arms up and stretch. 3. Neck rolls — slow, each side. 4. Shake out your hands. 5. Take one big breath and let it go. Done.', tags: ['stress', 'habit'] },
 
     // SOCIAL CONNECTION
@@ -477,7 +477,7 @@
 
     // SLEEP ON IT — for higher value items
     { id: 'sleep', icon: '🌙', category: 'Sleep on it', label: 'Remind me tomorrow', action: 'inline', detail: 'Research shows desire for impulse purchases drops significantly within 24 hours. Set a reminder and come back tomorrow. If you still want it, buy it.', tags: ['stress', 'bored', 'habit', 'treat'] },
-    { id: 'youtube', icon: '▶️', category: 'Watch', label: 'Watch something entertaining', action: 'external', url: 'https://www.youtube.com/watch?v=jNQXAC9IVRw', tags: ['bored', 'habit', 'treat'] }
+    { id: 'youtube', icon: '▶️', category: 'Watch', label: 'Watch something on YouTube', action: 'external', url: 'https://www.youtube.com', tags: ['bored', 'habit', 'treat'] }
   ];
 
   // Select 4 alternatives based on emotion
