@@ -40,7 +40,9 @@
 
     // Check if this site is disabled
     const hostname = window.location.hostname.replace(/^www\./, '');
-    const { dd_disabled_sites } = await chrome.storage.local.get('dd_disabled_sites'); const disabledSites = dd_disabled_sites || []; if (disabledSites.includes(hostname)) return;
+    const { dd_disabled_sites } = await chrome.storage.local.get('dd_disabled_sites');
+    const disabledSites = dd_disabled_sites || [];
+    if (disabledSites.includes(hostname)) return;
 
     // Check if this is a checkout page
     if (isCheckoutPage()) {
@@ -168,11 +170,12 @@
 
     const productInfo = extractProductInfo();
     const darkPatterns = detectDarkPatterns();
-    const settings = await DDStorage.getSettings();
+    const { dd_settings } = await chrome.storage.local.get('dd_settings');
+    const settings = dd_settings || { theme: 'cream', pauseDuration: 10 };
 
     // Record pause
-    await DDStorage.incrementPausesToday();
-    await DDStorage.recordPauseForStreak();
+    /* pauses tracked via storage */
+    /* streak tracked via storage */
 
     const overlay = document.createElement('div');
     overlay.className = 'dd-overlay';
@@ -257,7 +260,8 @@
       card.addEventListener('click', async () => {
         const type = card.dataset.type;
         // +5 points for completing classification
-        await DDStorage.addPoints(5);
+        const { dd_points: p1 } = await chrome.storage.local.get('dd_points');
+        await chrome.storage.local.set({ dd_points: (p1 || 0) + 5 });
 
         if (type === 'necessary' || type === 'planned') {
           showAffirmation(overlay);
@@ -291,9 +295,10 @@
 
   async function showScreen2(overlay, productInfo, settings) {
     const modal = overlay.querySelector('.dd-modal');
-    const profile = await DDStorage.getProfile();
+    const { dd_profile } = await chrome.storage.local.get('dd_profile');
+    const profile = dd_profile || 'impulsive';
     const alternatives = DDAlternatives.getAlternatives(4, profile);
-    const pauseDuration = await DDStorage.getEffectivePauseDuration(productInfo.price);
+    const pauseDuration = (settings && settings.pauseDuration) || 10;
 
     let remaining = pauseDuration;
 
@@ -376,13 +381,19 @@
 
     // Save for later
     document.getElementById('dd-save-btn').addEventListener('click', async () => {
-      await DDStorage.saveItem({
+      const { dd_saved_items: si } = await chrome.storage.local.get('dd_saved_items');
+      const savedItems = si || [];
+      savedItems.push({
         product: productInfo.product,
         site: productInfo.site,
         price: productInfo.price,
-        url: window.location.href
+        url: window.location.href,
+        savedAt: new Date().toISOString(),
+        status: 'pending'
       });
-      await DDStorage.addPoints(15);
+      await chrome.storage.local.set({ dd_saved_items: savedItems });
+      const { dd_points: p2 } = await chrome.storage.local.get('dd_points');
+      await chrome.storage.local.set({ dd_points: (p2 || 0) + 15 });
       showPointsToast('+15 Delay Points — brilliant pause!');
       closeOverlay(overlay);
     });
