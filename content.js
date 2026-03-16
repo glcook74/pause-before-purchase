@@ -353,9 +353,9 @@
 
     modal.querySelector('#dd-planned-save')
       .addEventListener('click', async () => {
-        const { dd_saved_items: si } = await chrome.storage.local.get('dd_saved_items');
-        const savedItems = si || [];
-        savedItems.push({
+        const { dd_planned_items: pi } = await chrome.storage.local.get('dd_planned_items');
+        const plannedItems = pi || [];
+        plannedItems.push({
           product: productInfo.product,
           site: productInfo.site,
           price: productInfo.price,
@@ -364,7 +364,7 @@
           status: 'pending',
           type: 'planned'
         });
-        await chrome.storage.local.set({ dd_saved_items: savedItems });
+        await chrome.storage.local.set({ dd_planned_items: plannedItems });
         const { dd_points: p } = await chrome.storage.local.get('dd_points');
         await chrome.storage.local.set({ dd_points: (p || 0) + 15 });
         chrome.runtime.sendMessage({
