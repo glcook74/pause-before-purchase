@@ -4,6 +4,13 @@
  * Sync a pause event to Supabase.
  * @param {Object} data - { site, product, price, choice_type, outcome, points_earned, alternative_chosen, url }
  */
+function parsePriceNumber(priceStr) {
+  if (!priceStr) return 0;
+  const cleaned = String(priceStr).replace(/[^0-9.]/g, '');
+  const num = parseFloat(cleaned);
+  return isNaN(num) ? 0 : num;
+}
+
 async function syncPauseEvent(data) {
   const { dd_user_id } = await chrome.storage.local.get('dd_user_id');
   if (!dd_user_id) return; // local-only mode, no sync
@@ -45,7 +52,7 @@ async function syncPauseEvent(data) {
 
     const newLongest = Math.max(newStreak, profile.longest_streak);
     const pointsEarned = data.pointsEarned || data.points_earned || 0;
-    const priceSaved = data.outcome === 'saved' && data.price ? parseFloat(data.price) : 0;
+    const priceSaved = data.outcome === 'saved' ? parsePriceNumber(data.price) : 0;
 
     // 3. Update profile
     const { error: updateErr } = await client
@@ -68,7 +75,7 @@ async function syncPauseEvent(data) {
       user_id: dd_user_id,
       site: data.site,
       product: data.product || null,
-      price: data.price ? parseFloat(data.price) : null,
+      price: parsePriceNumber(data.price) || null,
       choice_type: data.choiceType || data.choice_type,
       outcome: data.outcome,
       points_earned: pointsEarned,
@@ -83,7 +90,7 @@ async function syncPauseEvent(data) {
         user_id: dd_user_id,
         site: data.site,
         product: data.product || null,
-        price: data.price ? parseFloat(data.price) : null,
+        price: parsePriceNumber(data.price) || null,
         url: data.url || null,
         status: 'pending',
       });
