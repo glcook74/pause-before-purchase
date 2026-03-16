@@ -299,7 +299,7 @@
           showPlannedScreen(overlay, productInfo);
         } else if (type === 'impulsive') {
           showPointsToast('+5 Delay Points');
-          showScreen2(overlay, productInfo, settings);
+          showEmotionalCheckIn(overlay, productInfo, settings);
         }
       });
     });
@@ -388,20 +388,117 @@
       });
   }
 
+  // ===== EMOTIONAL CHECK-IN =====
+
+  async function showEmotionalCheckIn(overlay, productInfo, settings) {
+    const modal = overlay.querySelector('.dd-modal');
+    modal.innerHTML = `
+      <button class="dd-close-btn" title="Close" aria-label="Close">&times;</button>
+      <h2 class="dd-heading">One quick thing...</h2>
+      <p class="dd-subheading">What is driving this right now? No judgment — just helps us help you.</p>
+      <div class="dd-choices" style="gap:8px;">
+        <button class="dd-choice-card dd-emotion-btn" data-emotion="stress">
+          <span class="dd-choice-icon">😤</span>
+          <span class="dd-choice-content">
+            <span class="dd-choice-label">STRESSED</span>
+            <span class="dd-choice-desc">Overwhelmed or anxious right now</span>
+          </span>
+        </button>
+        <button class="dd-choice-card dd-emotion-btn" data-emotion="bored">
+          <span class="dd-choice-icon">😴</span>
+          <span class="dd-choice-content">
+            <span class="dd-choice-label">BORED</span>
+            <span class="dd-choice-desc">Nothing else is doing it for me</span>
+          </span>
+        </button>
+        <button class="dd-choice-card dd-emotion-btn" data-emotion="treat">
+          <span class="dd-choice-icon">🎉</span>
+          <span class="dd-choice-content">
+            <span class="dd-choice-label">TREATING MYSELF</span>
+            <span class="dd-choice-desc">I am in a good mood and feeling it</span>
+          </span>
+        </button>
+        <button class="dd-choice-card dd-emotion-btn" data-emotion="habit">
+          <span class="dd-choice-icon">😶</span>
+          <span class="dd-choice-content">
+            <span class="dd-choice-label">JUST BROWSING</span>
+            <span class="dd-choice-desc">Honestly not sure how I got here</span>
+          </span>
+        </button>
+      </div>
+    `;
+
+    modal.querySelector('.dd-close-btn')
+      .addEventListener('click', () => closeOverlay(overlay));
+
+    modal.querySelectorAll('.dd-emotion-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const emotion = btn.dataset.emotion;
+        // Store emotion for analytics
+        chrome.storage.local.get('dd_last_emotion').then(() => {
+          chrome.storage.local.set({ dd_last_emotion: emotion });
+        });
+        showScreen2(overlay, productInfo, settings, emotion);
+      });
+    });
+  }
+
   // ===== SCREEN 2: REDIRECT THAT ENERGY =====
 
-  async function showScreen2(overlay, productInfo, settings) {
+  // Full alternatives library
+  const ALL_ALTERNATIVES = [
+    // HIGH DOPAMINE — novelty/excitement (good for: treat, habit, bored)
+    { id: 'neal', icon: '🎮', category: 'Play', label: 'Something delightful', action: 'external', url: 'https://neal.fun', tags: ['bored', 'habit', 'treat'] },
+    { id: 'spotify_discover', icon: '🎵', category: 'Music', label: 'Discover something new', action: 'external', url: 'https://open.spotify.com/section/0JQ5DAqbMKFQ00XGBls6ym', tags: ['bored', 'habit', 'treat', 'stress'] },
+    { id: 'wikipedia', icon: '🌍', category: 'Learn', label: 'Random rabbit hole', action: 'external', url: 'https://en.wikipedia.org/wiki/Special:Random', tags: ['bored', 'habit'] },
+    { id: 'wordle', icon: '🧩', category: 'Puzzle', label: "Today's Wordle", action: 'external', url: 'https://www.nytimes.com/games/wordle/index.html', tags: ['bored', 'habit', 'treat'] },
+    { id: 'connections', icon: '🔗', category: 'Puzzle', label: "Today's Connections", action: 'external', url: 'https://www.nytimes.com/games/connections', tags: ['bored', 'habit'] },
+    { id: 'price_hunt', icon: '🎯', category: 'Challenge', label: 'Find it cheaper in 5 mins', action: 'inline', detail: 'Open a new tab and search for the same item on Google Shopping. If you find it cheaper, great. If not, you have spent 5 minutes thinking about it — still want it?', tags: ['treat', 'habit'] },
+
+    // EMOTIONAL REGULATION — for stress and overwhelm
+    { id: 'box_breathing', icon: '🌬️', category: 'Calm', label: 'Box breathing — 60 seconds', action: 'inline', detail: 'Breathe IN for 4 counts. HOLD for 4. OUT for 4. HOLD for 4. Repeat 4 times. This activates your parasympathetic nervous system and reduces the urgency feeling.', tags: ['stress', 'bored'] },
+    { id: 'body_scan', icon: '🧘', category: 'Calm', label: '30-second body scan', action: 'inline', detail: 'Close your eyes. Notice your feet. Your legs. Your stomach — is it tight? Your chest. Your shoulders. Your jaw. Where are you holding tension right now? That tension is not fixed by buying something.', tags: ['stress'] },
+    { id: 'write_feeling', icon: '✍️', category: 'Reflect', label: 'Write what you are feeling', action: 'inline', detail: 'Name it: I am feeling _______ right now, and I want to buy this because _______. You do not have to save it. Just name it.', tags: ['stress', 'bored'] },
+    { id: 'water', icon: '💧', category: 'Reset', label: 'Drink water, wait 3 minutes', action: 'inline', detail: 'Get up. Get a glass of water. Drink it slowly. Set a 3-minute timer. Come back and see if you still feel the same urgency. Dehydration increases impulsivity — seriously.', tags: ['stress', 'habit', 'bored'] },
+
+    // MOVEMENT — proven dopamine release
+    { id: 'walk', icon: '🏃', category: 'Move', label: '2-minute walk', action: 'inline', detail: 'Stand up right now. Walk to another room, or outside if you can. Set a 2-minute timer. Physical movement raises dopamine naturally — this is not a trick, it is neuroscience.', tags: ['stress', 'bored', 'habit'] },
+    { id: 'dance', icon: '🕺', category: 'Move', label: 'Dance to one song', action: 'external', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', tags: ['bored', 'treat', 'habit'] },
+    { id: 'stretch', icon: '🤸', category: 'Move', label: '5 stretches', action: 'inline', detail: '1. Roll your shoulders back 5 times. 2. Reach both arms up and stretch. 3. Neck rolls — slow, each side. 4. Shake out your hands. 5. Take one big breath and let it go. Done.', tags: ['stress', 'habit'] },
+
+    // SOCIAL CONNECTION
+    { id: 'text_friend', icon: '💬', category: 'Connect', label: 'Text someone something nice', action: 'inline', detail: 'Think of one person who would appreciate a message right now. Send them something — a compliment, a memory, a stupid meme. Social connection releases oxytocin, which competes directly with the buying urge.', tags: ['stress', 'bored', 'treat'] },
+    { id: 'call', icon: '📞', category: 'Connect', label: 'Call someone for 5 minutes', action: 'inline', detail: 'Who have you been meaning to call? Do it now — 5 minutes maximum. The shopping will still be there. The urge probably will not be.', tags: ['stress', 'bored'] },
+
+    // FINANCIAL REALITY
+    { id: 'bank_check', icon: '💰', category: 'Reality check', label: 'Check your balance first', action: 'inline', detail: 'Open your banking app and look at your actual balance before you decide. Not your available credit — your actual balance. How does this purchase feel now?', tags: ['habit', 'treat'] },
+    { id: 'work_hours', icon: '⏱️', category: 'Reality check', label: 'How many hours is this?', action: 'inline', detail: 'Think about how long you had to work to earn the money for this. Is this item worth that many hours of your life? Sometimes it is. Sometimes that changes things.', tags: ['habit', 'treat', 'stress'] },
+    { id: 'saved_list', icon: '📋', category: 'Reality check', label: 'Check your saved list', action: 'inline', detail: 'You have already saved some things for later. Go check if any of them are still calling you — maybe something on your list matters more than this does right now.', tags: ['habit', 'treat'] },
+
+    // SLEEP ON IT — for higher value items
+    { id: 'sleep', icon: '🌙', category: 'Sleep on it', label: 'Remind me tomorrow', action: 'inline', detail: 'Research shows desire for impulse purchases drops significantly within 24 hours. Set a reminder and come back tomorrow. If you still want it, buy it.', tags: ['stress', 'bored', 'habit', 'treat'] },
+    { id: 'youtube', icon: '▶️', category: 'Watch', label: 'Watch something entertaining', action: 'external', url: 'https://www.youtube.com/watch?v=jNQXAC9IVRw', tags: ['bored', 'habit', 'treat'] }
+  ];
+
+  // Select 4 alternatives based on emotion
+  function getAlternativesForEmotion(emotion) {
+    const matching = ALL_ALTERNATIVES.filter(a => a.tags.includes(emotion));
+    const nonMatching = ALL_ALTERNATIVES.filter(a => !a.tags.includes(emotion));
+    // Shuffle matching ones
+    const shuffled = matching.sort(() => Math.random() - 0.5);
+    // Take 3 emotion-matched + 1 wildcard for novelty
+    const selected = shuffled.slice(0, 3);
+    const wildcard = nonMatching[Math.floor(Math.random() * nonMatching.length)];
+    if (wildcard) selected.push(wildcard);
+    return selected.slice(0, 4);
+  }
+
+  async function showScreen2(overlay, productInfo, settings, emotion = 'habit') {
     const modal = overlay.querySelector('.dd-modal');
-    const { dd_profile } = await chrome.storage.local.get('dd_profile');
-    const profile = dd_profile || 'impulsive';
-    const alternatives = [
-      { id: 'spotify', icon: '🎵', category: 'Music', label: 'Open Spotify', action: 'external', url: 'https://open.spotify.com' },
-      { id: 'puzzle', icon: '🧩', category: 'Puzzle', label: 'Try Wordle', action: 'external', url: 'https://www.nytimes.com/games/wordle/index.html' },
-      { id: 'breathe', icon: '🌬️', category: 'Calm', label: 'Box breathing', action: 'inline', detail: 'Breathe in 4 counts. Hold 4. Out 4. Hold 4. Repeat 3 times.' },
-      { id: 'move', icon: '🏃', category: 'Movement', label: '2 min walk', action: 'inline', detail: 'Stand up. Walk around for 2 minutes. Come back and see if you still want it.' }
-    ];
+    const alternatives = getAlternativesForEmotion(emotion);
     const pauseDuration = (settings && settings.pauseDuration) || 10;
 
+    const priceNum = parseFloat((productInfo.price || '0').replace(/[^0-9.]/g, ''));
     let remaining = pauseDuration;
 
     const altTilesHTML = alternatives.map(alt => `
@@ -433,6 +530,7 @@
       </div>
 
       <button class="dd-save-btn" id="dd-save-btn">Save for later</button>
+      ${priceNum > 50 ? '<button class="dd-save-btn" id="dd-sleep-btn" style="background: #C9921A; margin-top: 8px;">🌙 Sleep on it — remind me tomorrow</button>' : ''}
       <button class="dd-proceed-link" id="dd-proceed" disabled>Wait for pause to finish...</button>
     `;
 
@@ -513,6 +611,28 @@
       showPointsToast('+15 Delay Points — brilliant pause!');
       closeOverlay(overlay);
     });
+
+    // Sleep on it button (high-value items only)
+    const sleepBtn = document.getElementById('dd-sleep-btn');
+    if (sleepBtn) {
+      sleepBtn.addEventListener('click', async () => {
+        const reminder = {
+          product: productInfo.product,
+          site: productInfo.site,
+          price: productInfo.price,
+          url: window.location.href,
+          remindAt: new Date(Date.now() + 86400000).toISOString()
+        };
+        const { dd_reminders: existing } = await chrome.storage.local.get('dd_reminders');
+        const reminders = existing || [];
+        reminders.push(reminder);
+        await chrome.storage.local.set({ dd_reminders: reminders });
+        showPointsToast('Reminder set! +10 Delay Points 🌙');
+        const { dd_points: p3 } = await chrome.storage.local.get('dd_points');
+        await chrome.storage.local.set({ dd_points: (p3 || 0) + 10 });
+        closeOverlay(overlay);
+      });
+    }
 
     // Proceed button
     proceedBtn.addEventListener('click', () => {
