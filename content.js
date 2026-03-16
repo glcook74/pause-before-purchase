@@ -40,7 +40,8 @@
 
       // Check if onboarded
       const { dd_onboarded } = await chrome.storage.local.get('dd_onboarded');
-      const onboarded = dd_onboarded || false;
+      // Default to true so overlay works without completing onboarding
+      const onboarded = dd_onboarded !== false;
       if (!onboarded) return;
 
       // Check if this site is disabled

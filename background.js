@@ -30,6 +30,9 @@ chrome.runtime.onInstalled.addListener(async () => {
     await chrome.storage.local.set({ dd_points: 0 });
   }
 
+  // Mark as onboarded on fresh install so overlay works immediately
+  await chrome.storage.local.set({ dd_onboarded: true });
+
   await retrySyncQueue();
   await checkProStatus();
 });
