@@ -345,11 +345,11 @@
         ${purchaseInfoHTML}
         <p class="dd-question">What kind of purchase is this?</p>
         <div class="dd-choices">
-          <button class="dd-choice-card" data-type="necessary">
-            <span class="dd-choice-icon">✅</span>
+          <button class="dd-choice-card" data-type="impulsive">
+            <span class="dd-choice-icon">⚡</span>
             <span class="dd-choice-content">
-              <span class="dd-choice-label">NECESSARY</span>
-              <span class="dd-choice-desc">I genuinely need this</span>
+              <span class="dd-choice-label">IMPULSIVE</span>
+              <span class="dd-choice-desc">I just want it right now</span>
             </span>
           </button>
           <button class="dd-choice-card" data-type="planned">
@@ -359,11 +359,11 @@
               <span class="dd-choice-desc">I've been thinking about this for a while</span>
             </span>
           </button>
-          <button class="dd-choice-card" data-type="impulsive">
-            <span class="dd-choice-icon">⚡</span>
+          <button class="dd-choice-card" data-type="necessary">
+            <span class="dd-choice-icon">✅</span>
             <span class="dd-choice-content">
-              <span class="dd-choice-label">IMPULSIVE</span>
-              <span class="dd-choice-desc">I just want it right now</span>
+              <span class="dd-choice-label">NECESSARY</span>
+              <span class="dd-choice-desc">I genuinely need this</span>
             </span>
           </button>
         </div>
