@@ -1,15 +1,15 @@
 {
   "manifest_version": 3,
   "name": "Pause Before Purchase – Dopamine Delay",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Pause impulse purchases, earn points, and sync your progress to the cloud.",
   "permissions": [
-    "storage",
-    "activeTab",
-    "tabs"
+    "storage"
   ],
   "host_permissions": [
-    "https://*.supabase.co/*"
+    "https://*.supabase.co/*",
+    "https://dopaminedelay.com/*",
+    "https://www.dopaminedelay.com/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -28,6 +28,14 @@
       "css": ["overlay.css"],
       "js": ["lib/storage.js", "content.js"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://dopaminedelay.com/*",
+        "https://www.dopaminedelay.com/*"
+      ],
+      "js": ["bridge.js"],
+      "run_at": "document_idle"
     }
   ],
   "icons": {
@@ -35,7 +43,13 @@
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
- "content_security_policy": {
-      "extension_pages": "script-src 'self'; object-src 'self'"
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/icon48.png"],
+      "matches": ["<all_urls>"]
     }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
   }
+}

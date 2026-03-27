@@ -64,7 +64,7 @@
   position: relative !important;
 }
 
-/* ===== BRAND LABEL ===== */
+/* ===== BRAND LOGO ===== */
 .dd-brand-label {
   position: absolute !important;
   top: 16px !important;
@@ -73,6 +73,32 @@
   font-weight: 600 !important;
   color: #2D7A5F !important;
   letter-spacing: 0.05em !important;
+}
+
+.dd-logo-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  position: absolute !important;
+  top: 14px !important;
+  left: 18px !important;
+}
+
+.dd-logo-img {
+  width: 24px !important;
+  height: 24px !important;
+  object-fit: contain !important;
+}
+
+.dd-logo-wordmark {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #1B4332 !important;
+  letter-spacing: 0.02em !important;
+}
+
+.dd-logo-gold {
+  color: #A07830 !important;
 }
 
 /* ===== CLOSE BUTTON ===== */
@@ -134,11 +160,20 @@
 }
 
 .dd-purchase-product {
-  display: none !important;
+  font-size: 13px !important;
+  color: #4A5568 !important;
+  margin: 2px 0 0 0 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
 }
 
 .dd-purchase-price {
-  display: none !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: #2D7A5F !important;
+  margin: 6px 0 0 0 !important;
 }
 
 /* ===== QUESTION ===== */
@@ -187,6 +222,28 @@
 
 .dd-choice-icon {
   display: none !important;
+}
+
+.dd-choice-icon-wrap {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.dd-icon-impulse {
+  background: #FDF0E6 !important;
+}
+
+.dd-icon-planned {
+  background: #EAF5EE !important;
+}
+
+.dd-icon-necessary {
+  background: #E6F4F1 !important;
 }
 
 .dd-emotion-dot {

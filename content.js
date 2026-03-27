@@ -325,7 +325,10 @@
 
     overlay.innerHTML = `
       <div class="dd-modal">
-        <span class="dd-brand-label">Dopamine Delay</span>
+        <div class="dd-logo-row">
+          <img src="${chrome.runtime.getURL('icons/icon48.png')}" alt="Dopamine Delay" class="dd-logo-img" />
+          <span class="dd-logo-wordmark">Dopamine <span class="dd-logo-gold">Delay</span></span>
+        </div>
         <button class="dd-close-btn" title="Close" aria-label="Close">&times;</button>
         ${darkPatternHTML}
         <h2 class="dd-heading">Before you buy</h2>
@@ -333,18 +336,39 @@
         <p class="dd-question">What's this one?</p>
         <div class="dd-choices">
           <button class="dd-choice-card" data-type="impulsive">
+            <span class="dd-choice-icon-wrap dd-icon-impulse">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M10 2L12 7.5H18L13.5 11L15.5 17L10 13.5L4.5 17L6.5 11L2 7.5H8L10 2Z" fill="#C47A1A"/>
+              </svg>
+            </span>
             <span class="dd-choice-content">
               <span class="dd-choice-label">Impulsive</span>
               <span class="dd-choice-desc">I just want it right now</span>
             </span>
           </button>
           <button class="dd-choice-card" data-type="planned">
+            <span class="dd-choice-icon-wrap dd-icon-planned">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <rect x="2" y="3" width="16" height="15" rx="3" stroke="#2D7A5F" stroke-width="1.5"/>
+                <path d="M6 3V1M14 3V1" stroke="#2D7A5F" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M2 7H18" stroke="#2D7A5F" stroke-width="1.5"/>
+                <path d="M6 11H9M6 14H12" stroke="#2D7A5F" stroke-width="1.5" stroke-linecap="round"/>
+                <circle cx="14.5" cy="13.5" r="2" fill="#2D7A5F"/>
+                <path d="M13.3 13.5L14.2 14.4L15.8 12.5" stroke="white" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
             <span class="dd-choice-content">
               <span class="dd-choice-label">Planned</span>
               <span class="dd-choice-desc">I've been thinking about this</span>
             </span>
           </button>
           <button class="dd-choice-card" data-type="necessary">
+            <span class="dd-choice-icon-wrap dd-icon-necessary">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M10 2C10 2 4 5.5 4 11C4 14.3 6.7 17 10 17C13.3 17 16 14.3 16 11C16 5.5 10 2 10 2Z" stroke="#1B4332" stroke-width="1.5" fill="#E6F8F2"/>
+                <path d="M7.5 11.5L9.2 13.2L12.5 9.5" stroke="#1B4332" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
             <span class="dd-choice-content">
               <span class="dd-choice-label">Necessary</span>
               <span class="dd-choice-desc">I genuinely need this</span>
@@ -417,7 +441,10 @@
   function showAffirmation(overlay) {
     const modal = overlay.querySelector('.dd-modal');
     modal.innerHTML = `
-      <span class="dd-brand-label">Dopamine Delay</span>
+      <div class="dd-logo-row">
+        <img src="${chrome.runtime.getURL('icons/icon48.png')}" alt="Dopamine Delay" class="dd-logo-img" />
+        <span class="dd-logo-wordmark">Dopamine <span class="dd-logo-gold">Delay</span></span>
+      </div>
       <div class="dd-affirmation">
         <span class="dd-affirmation-icon">💚</span>
         <p class="dd-affirmation-text">Nice one. You've got this.</p>
@@ -435,7 +462,10 @@
   async function showPlannedScreen(overlay, productInfo) {
     const modal = overlay.querySelector('.dd-modal');
     modal.innerHTML = `
-      <span class="dd-brand-label">Dopamine Delay</span>
+      <div class="dd-logo-row">
+        <img src="${chrome.runtime.getURL('icons/icon48.png')}" alt="Dopamine Delay" class="dd-logo-img" />
+        <span class="dd-logo-wordmark">Dopamine <span class="dd-logo-gold">Delay</span></span>
+      </div>
       <button class="dd-close-btn" title="Close" aria-label="Close">&times;</button>
       <h2 class="dd-heading">Good thinking.</h2>
       <p class="dd-subheading">Since you have been planning this, do you want to save it to your list to buy at the right moment?</p>
@@ -494,7 +524,10 @@
   async function showEmotionalCheckIn(overlay, productInfo) {
     const modal = overlay.querySelector('.dd-modal');
     modal.innerHTML = `
-      <span class="dd-brand-label">Dopamine Delay</span>
+      <div class="dd-logo-row">
+        <img src="${chrome.runtime.getURL('icons/icon48.png')}" alt="Dopamine Delay" class="dd-logo-img" />
+        <span class="dd-logo-wordmark">Dopamine <span class="dd-logo-gold">Delay</span></span>
+      </div>
       <button class="dd-close-btn" title="Close" aria-label="Close">&times;</button>
       <h2 class="dd-heading">What's driving this?</h2>
       <p class="dd-subheading">No wrong answers — this helps us find the right alternative for you.</p>
@@ -620,7 +653,10 @@
     `).join('');
 
     modal.innerHTML = `
-      <span class="dd-brand-label">Dopamine Delay</span>
+      <div class="dd-logo-row">
+        <img src="${chrome.runtime.getURL('icons/icon48.png')}" alt="Dopamine Delay" class="dd-logo-img" />
+        <span class="dd-logo-wordmark">Dopamine <span class="dd-logo-gold">Delay</span></span>
+      </div>
       <button class="dd-close-btn" title="Close" aria-label="Close">&times;</button>
       <h2 class="dd-heading" style="font-size:18px !important;">Your pause</h2>
       <p class="dd-subheading">Your brain wants a hit of something. Here are some ways to get it without spending.</p>
