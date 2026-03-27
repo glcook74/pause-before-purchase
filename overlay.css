@@ -372,8 +372,8 @@
 }
 
 .dd-timer-label {
-  font-size: 12px !important;
-  color: #9CA3AF !important;
+  font-size: 13px !important;
+  color: #6B7280 !important;
   margin: 4px 0 0 0 !important;
 }
 
@@ -387,7 +387,7 @@
 
 .dd-progress-bar {
   width: 100% !important;
-  height: 4px !important;
+  height: 6px !important;
   background: #E8E4D9 !important;
   border-radius: 2px !important;
   overflow: hidden !important;
@@ -400,6 +400,7 @@
   border-radius: 2px !important;
   transition: width 1s linear !important;
   width: 100% !important;
+  box-shadow: 0 0 6px rgba(45, 122, 95, 0.4) !important;
 }
 
 /* ===== PRIMARY CTA BUTTON ===== */

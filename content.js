@@ -582,13 +582,25 @@
     const tag = EMOTION_TO_TAG[emotion] || emotion;
     const matching = ALL_ALTERNATIVES.filter(a => a.tags.includes(tag));
     const nonMatching = ALL_ALTERNATIVES.filter(a => !a.tags.includes(tag));
-    // Shuffle matching ones
     const shuffled = matching.sort(() => Math.random() - 0.5);
-    // Take 3 emotion-matched + 1 wildcard for novelty
-    const selected = shuffled.slice(0, 3);
-    const wildcard = nonMatching[Math.floor(Math.random() * nonMatching.length)];
-    if (wildcard) selected.push(wildcard);
-    return selected.slice(0, 4);
+
+    // Deduplicate by category — max 1 tile per category
+    const seen = new Set();
+    const deduped = [];
+    for (const alt of shuffled) {
+      if (!seen.has(alt.category)) {
+        seen.add(alt.category);
+        deduped.push(alt);
+      }
+      if (deduped.length === 3) break;
+    }
+
+    // Add 1 wildcard from a different category
+    const usedCategories = new Set(deduped.map(a => a.category));
+    const wildcard = nonMatching.find(a => !usedCategories.has(a.category));
+    if (wildcard) deduped.push(wildcard);
+
+    return deduped.slice(0, 4);
   }
 
   async function showScreen2(overlay, productInfo, emotion = 'habit') {
@@ -786,8 +798,8 @@
 
     setTimeout(() => {
       if (toast.parentNode) toast.remove();
-      window.open('https://dopaminedelay.com/dashboard', '_blank');
-    }, 2500);
+      window.open('https://dopaminedelay.com/dashboard?skip_tour=true', '_blank');
+    }, 1200);
   }
 
   // ===== HELPERS =====
