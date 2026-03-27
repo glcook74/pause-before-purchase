@@ -663,17 +663,41 @@
 
     // Alternative tiles — all internal, track selection
     modal.querySelectorAll('.dd-alt-tile').forEach(tile => {
-      tile.addEventListener('click', () => {
+      tile.addEventListener('click', async () => {
         // Track which alternative was selected
         const altId = tile.dataset.id;
         const altCategory = tile.dataset.category;
         DDStorage.set(DDStorage.KEYS.LAST_ALTERNATIVE, altId);
         DDStorage.set(DDStorage.KEYS.LAST_ALTERNATIVE_CATEGORY, altCategory);
 
-        // Show description in detail box
+        // Award points for choosing a redirect
+        await DDStorage.addPoints(5);
+        showPointsToast('+5 Delay Points — good redirect');
+        chrome.runtime.sendMessage({
+          type: 'PAUSE_EVENT',
+          data: {
+            site: productInfo.site,
+            product: productInfo.product,
+            price: productInfo.price,
+            choiceType: 'impulsive',
+            outcome: 'redirected',
+            pointsEarned: 5,
+            emotional_state: currentEmotion || null,
+            alternative_chosen: altId,
+            alternative_category: altCategory,
+            dark_patterns_detected: currentDarkPatterns.length > 0 ? currentDarkPatterns : null,
+          },
+        });
+
+        // Show activity prompt in detail box
         const detailBox = document.getElementById('dd-alt-detail');
         if (detailBox && tile.dataset.desc) {
-          detailBox.textContent = tile.dataset.desc;
+          detailBox.innerHTML = `
+            <div class="dd-activity-prompt">
+              <p class="dd-activity-desc">${tile.dataset.desc}</p>
+              <p class="dd-activity-cue">Take your time — the checkout will still be here.</p>
+            </div>
+          `;
           detailBox.style.display = 'block';
         }
 
@@ -714,8 +738,8 @@
         },
       });
 
-      showPointsToast('+15 Delay Points — brilliant pause!');
       closeOverlay(overlay);
+      showCelebrationToast();
     });
 
     // Sleep on it button (high-value items only)
@@ -741,6 +765,29 @@
         closeOverlay(overlay);
       }
     });
+  }
+
+  // ===== CELEBRATION TOAST =====
+
+  function showCelebrationToast() {
+    const existing = document.querySelector('.dd-celebration-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'dd-celebration-toast';
+    toast.innerHTML = `
+      <div class="dd-celebration">
+        <div class="dd-celebration-points">✦ +15 Delay Points</div>
+        <div class="dd-celebration-message">You just chose differently.</div>
+        <div class="dd-celebration-sub">That's what control looks like.</div>
+      </div>
+    `;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      if (toast.parentNode) toast.remove();
+      window.open('https://dopaminedelay.com/dashboard', '_blank');
+    }, 2500);
   }
 
   // ===== HELPERS =====
