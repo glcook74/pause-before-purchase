@@ -509,8 +509,8 @@
             dark_patterns_detected: currentDarkPatterns.length > 0 ? currentDarkPatterns : null,
           }
         });
-        showPointsToast('+15 Delay Points — smart save!');
         closeOverlay(overlay);
+        showCelebrationToast();
       });
 
     modal.querySelector('#dd-planned-buy')
