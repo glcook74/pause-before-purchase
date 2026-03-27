@@ -142,25 +142,6 @@
     return bestPrice;
   }
 
-  /**
-   * Count items visible in a basket / cart page.
-   */
-  function getBasketItemCount() {
-    const itemSelectors = [
-      '.sc-list-item',                           // Amazon
-      '.cart-item', '.basket-item',
-      '[class*="cart-item"]', '[class*="basket-item"]',
-      '[data-testid="cart-item"]',
-      '.bag-item',                               // ASOS
-      '.product-list-item',
-    ];
-
-    for (const selector of itemSelectors) {
-      const items = document.querySelectorAll(selector);
-      if (items.length > 0) return items.length;
-    }
-    return 0;
-  }
 
   function extractProductInfo() {
     const info = {
@@ -173,10 +154,7 @@
 
     // --- Product name ---
     if (onBasketPage) {
-      const count = getBasketItemCount();
-      info.product = count > 0
-        ? `${count} item${count === 1 ? '' : 's'} in your basket`
-        : 'Items in your basket';
+      info.product = info.site || 'Unknown site';
     } else {
       const productSelectors = [
         '#productTitle',                           // Amazon
