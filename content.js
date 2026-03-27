@@ -490,11 +490,12 @@
 
     modal.querySelector('#dd-planned-save')
       .addEventListener('click', async () => {
-        await DDStorage.savePlannedItem({
+        await DDStorage.saveItem({
           product: productInfo.product,
           site: productInfo.site,
           price: productInfo.price,
           url: window.location.href,
+          type: 'planned',
         });
         await DDStorage.addPoints(15);
         chrome.runtime.sendMessage({
@@ -545,7 +546,7 @@
         <p style="font-size:14px !important;color:#6B7280 !important;text-align:center !important;margin:16px 0 12px 0 !important;">
           Want to know how many hours of work this costs? Add your salary in your profile.
         </p>
-        <a href="https://dopaminedelay.com/dashboard?section=profile" target="_blank"
+        <a href="https://dopaminedelay.com/dashboard?skip_tour=true&section=profile" target="_blank"
           style="display:block !important;text-align:center !important;font-size:13px !important;font-weight:600 !important;color:#2D7A5F !important;text-decoration:none !important;margin:0 0 16px 0 !important;">
           Set up my profile &rarr;
         </a>
@@ -844,7 +845,7 @@
 
               setTimeout(() => {
                 closeOverlay(overlay);
-                window.open('https://dopaminedelay.com/dashboard?section=journal', '_blank');
+                window.open('https://dopaminedelay.com/dashboard?skip_tour=true&section=journal', '_blank');
               }, 800);
             });
           } else if (tile.dataset.desc) {
@@ -943,7 +944,7 @@
 
     setTimeout(() => {
       if (toast.parentNode) toast.remove();
-      window.open('https://dopaminedelay.com/dashboard?section=saved', '_blank');
+      window.open('https://dopaminedelay.com/dashboard?skip_tour=true&section=saved', '_blank');
     }, 1200);
   }
 

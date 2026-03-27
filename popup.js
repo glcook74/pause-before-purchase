@@ -283,7 +283,11 @@ async function loginFromSession(session) {
         .single();
 
       if (profile) {
-        await DDStorage.set(DDStorage.KEYS.POINTS, profile.total_points || 0);
+        const localPts = await DDStorage.getPoints();
+        const serverPts = profile.total_points || 0;
+        if (serverPts > localPts) {
+          await DDStorage.set(DDStorage.KEYS.POINTS, serverPts);
+        }
         await DDStorage.set(DDStorage.KEYS.STREAK, profile.current_streak || 0);
         await DDStorage.set(DDStorage.KEYS.PRO, profile.is_pro || false);
       }
@@ -417,7 +421,11 @@ btnSignin.addEventListener('click', async () => {
       .single();
 
     if (profile) {
-      await DDStorage.set(DDStorage.KEYS.POINTS, profile.total_points || 0);
+      const localPts = await DDStorage.getPoints();
+      const serverPts = profile.total_points || 0;
+      if (serverPts > localPts) {
+        await DDStorage.set(DDStorage.KEYS.POINTS, serverPts);
+      }
       await DDStorage.set(DDStorage.KEYS.STREAK, profile.current_streak || 0);
       await DDStorage.set(DDStorage.KEYS.PRO, profile.is_pro || false);
     }
