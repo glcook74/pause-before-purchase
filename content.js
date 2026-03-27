@@ -401,8 +401,9 @@
     overlay.querySelectorAll('.dd-choice-card').forEach(card => {
       card.addEventListener('click', async () => {
         const type = card.dataset.type;
-        // +5 points for completing classification
-        await DDStorage.addPoints(5);
+        if (type !== 'necessary') {
+          await DDStorage.addPoints(5);
+        }
 
         // Track streak and daily pauses
         await DDStorage.recordPauseForStreak();
@@ -417,14 +418,13 @@
             price: productInfo.price,
             choiceType: type,
             outcome: type === 'impulsive' ? 'redirected' : 'bought',
-            pointsEarned: 5,
+            pointsEarned: type !== 'necessary' ? 5 : 0,
             dark_patterns_detected: darkPatterns.length > 0 ? darkPatterns : null,
           },
         });
 
         if (type === 'necessary') {
           showAffirmation(overlay);
-          showPointsToast('+5 Delay Points');
         } else if (type === 'planned') {
           showPointsToast('+5 Delay Points');
           showPlannedScreen(overlay, productInfo);
@@ -515,6 +515,79 @@
 
     modal.querySelector('#dd-planned-buy')
       .addEventListener('click', () => {
+        showBuyConfirmation(overlay, productInfo);
+      });
+  }
+
+  // ===== BUY CONFIRMATION (friction screen) =====
+
+  async function showBuyConfirmation(overlay, productInfo) {
+    const modal = overlay.querySelector('.dd-modal');
+    const priceNum = parseFloat((productInfo.price || '0').replace(/[^0-9.]/g, ''));
+
+    // Try to get salary from stored profile
+    let hourlyRate = null;
+    let hoursText = '';
+    try {
+      const stored = await chrome.storage.local.get('dd_user_profile');
+      const profile = stored.dd_user_profile || {};
+      if (profile.annual_salary) {
+        hourlyRate = profile.annual_salary / 1800;
+        const hours = (priceNum / hourlyRate).toFixed(1);
+        hoursText = `<p style="font-size:18px !important;font-weight:600 !important;color:#2D7A5F !important;text-align:center !important;margin:16px 0 20px 0 !important;">This is roughly ${hours} hours of work at your salary.</p>`;
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    if (!hoursText) {
+      hoursText = `
+        <p style="font-size:14px !important;color:#6B7280 !important;text-align:center !important;margin:16px 0 12px 0 !important;">
+          Want to know how many hours of work this costs? Add your salary in your profile.
+        </p>
+        <a href="https://dopaminedelay.com/dashboard?section=profile" target="_blank"
+          style="display:block !important;text-align:center !important;font-size:13px !important;font-weight:600 !important;color:#2D7A5F !important;text-decoration:none !important;margin:0 0 16px 0 !important;">
+          Set up my profile &rarr;
+        </a>
+      `;
+    }
+
+    modal.innerHTML = `
+      <div class="dd-logo-row">
+        <img src="${chrome.runtime.getURL('icons/icon48.png')}" alt="Dopamine Delay" class="dd-logo-img" />
+        <span class="dd-logo-wordmark">Dopamine <span class="dd-logo-gold">Delay</span></span>
+      </div>
+      <button class="dd-close-btn" title="Close" aria-label="Close">&times;</button>
+      <h2 class="dd-heading">Just checking in</h2>
+      ${hoursText}
+      <div class="dd-choices" style="gap:8px;">
+        <button class="dd-choice-card" id="dd-confirm-buy">
+          <span class="dd-choice-content">
+            <span class="dd-choice-label">I still want to buy</span>
+            <span class="dd-choice-desc">I've thought about it and I'm sure</span>
+          </span>
+        </button>
+        <button class="dd-choice-card" id="dd-confirm-wait">
+          <span class="dd-choice-content">
+            <span class="dd-choice-label">Actually, let me wait</span>
+            <span class="dd-choice-desc">I'll come back when I'm ready</span>
+          </span>
+        </button>
+      </div>
+    `;
+
+    modal.querySelector('.dd-close-btn')
+      .addEventListener('click', () => closeOverlay(overlay));
+
+    modal.querySelector('#dd-confirm-buy')
+      .addEventListener('click', () => {
+        closeOverlay(overlay);
+      });
+
+    modal.querySelector('#dd-confirm-wait')
+      .addEventListener('click', async () => {
+        await DDStorage.addPoints(10);
+        showPointsToast('+10 Delay Points — good pause!');
         closeOverlay(overlay);
       });
   }
@@ -643,6 +716,7 @@
 
     const priceNum = parseFloat((productInfo.price || '0').replace(/[^0-9.]/g, ''));
     let remaining = pauseDuration;
+    let altPointsAwarded = false;
 
     const altTilesHTML = alternatives.map(alt => `
       <button class="dd-alt-tile" data-id="${alt.id}" data-category="${alt.category}" data-desc="${escapeHTML(alt.desc)}">
@@ -718,9 +792,12 @@
         DDStorage.set(DDStorage.KEYS.LAST_ALTERNATIVE, altId);
         DDStorage.set(DDStorage.KEYS.LAST_ALTERNATIVE_CATEGORY, altCategory);
 
-        // Award points for choosing a redirect
-        await DDStorage.addPoints(5);
-        showPointsToast('+5 Delay Points — good redirect');
+        // Award points for choosing a redirect (once per session)
+        if (!altPointsAwarded) {
+          altPointsAwarded = true;
+          await DDStorage.addPoints(5);
+          showPointsToast('+5 Delay Points — good redirect');
+        }
         chrome.runtime.sendMessage({
           type: 'PAUSE_EVENT',
           data: {
@@ -739,14 +816,46 @@
 
         // Show activity prompt in detail box
         const detailBox = document.getElementById('dd-alt-detail');
-        if (detailBox && tile.dataset.desc) {
-          detailBox.innerHTML = `
-            <div class="dd-activity-prompt">
-              <p class="dd-activity-desc">${tile.dataset.desc}</p>
-              <p class="dd-activity-cue">Take your time — the checkout will still be here.</p>
-            </div>
-          `;
-          detailBox.style.display = 'block';
+        if (detailBox) {
+          if (altId === 'write_feeling') {
+            detailBox.innerHTML = `
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <p style="font-size:13px;color:#1B4332;font-weight:600;text-align:center;margin:0;">What are you feeling right now?</p>
+                <textarea id="dd-journal-text" placeholder="Three sentences. No wrong answers..."
+                  style="width:100%;min-height:80px;padding:10px 12px;border:1px solid #E8E4D9;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;outline:none;color:#1B4332;background:#fff;"></textarea>
+                <button id="dd-journal-save"
+                  style="width:100%;padding:10px;background:#2D7A5F;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">
+                  Save to my journal
+                </button>
+              </div>
+            `;
+            detailBox.style.display = 'block';
+
+            document.getElementById('dd-journal-save').addEventListener('click', async () => {
+              const text = document.getElementById('dd-journal-text').value.trim();
+              if (!text) return;
+
+              const entries = await DDStorage.get('dd_journal_entries') || [];
+              entries.unshift({ text, date: new Date().toISOString(), emotion: currentEmotion });
+              await DDStorage.set('dd_journal_entries', entries);
+
+              await DDStorage.addPoints(10);
+              showPointsToast('+10 Delay Points — reflection saved');
+
+              setTimeout(() => {
+                closeOverlay(overlay);
+                window.open('https://dopaminedelay.com/dashboard?section=journal', '_blank');
+              }, 800);
+            });
+          } else if (tile.dataset.desc) {
+            detailBox.innerHTML = `
+              <div class="dd-activity-prompt">
+                <p class="dd-activity-desc">${tile.dataset.desc}</p>
+                <p class="dd-activity-cue">Take your time — the checkout will still be here.</p>
+              </div>
+            `;
+            detailBox.style.display = 'block';
+          }
         }
 
         // Highlight selected tile
@@ -834,7 +943,7 @@
 
     setTimeout(() => {
       if (toast.parentNode) toast.remove();
-      window.open('https://dopaminedelay.com/dashboard?skip_tour=true', '_blank');
+      window.open('https://dopaminedelay.com/dashboard?section=saved', '_blank');
     }, 1200);
   }
 
