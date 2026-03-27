@@ -2,8 +2,10 @@
    Design system: Nunito font, #1D9E75 teal, #F9F7F4 off-white
    Calm, spacious, non-judgmental */
 
-/* ===== FONT ===== */
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
+/* ===== FONT (bundled locally) ===== */
+@font-face { font-family: 'Nunito'; font-weight: 400; font-style: normal; font-display: swap; src: url('fonts/nunito-400.ttf') format('truetype'); }
+@font-face { font-family: 'Nunito'; font-weight: 600; font-style: normal; font-display: swap; src: url('fonts/nunito-600.ttf') format('truetype'); }
+@font-face { font-family: 'Nunito'; font-weight: 700; font-style: normal; font-display: swap; src: url('fonts/nunito-700.ttf') format('truetype'); }
 
 /* ===== RESET & BASE ===== */
 .dd-overlay,
@@ -49,16 +51,28 @@
 
 /* ===== MODAL ===== */
 .dd-modal {
-  background: #F9F7F4 !important;
+  background: #FAF7F0 !important;
   border-radius: 16px !important;
+  border-top: 3px solid #1B4332 !important;
   padding: 32px 28px !important;
   max-width: 460px !important;
   width: 92% !important;
   max-height: 90vh !important;
-  overflow-y: auto !important;
+  overflow: hidden !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04) !important;
   animation: dd-slide-up 0.3s ease-out !important;
   position: relative !important;
+}
+
+/* ===== BRAND LABEL ===== */
+.dd-brand-label {
+  position: absolute !important;
+  top: 16px !important;
+  left: 20px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: #2D7A5F !important;
+  letter-spacing: 0.05em !important;
 }
 
 /* ===== CLOSE BUTTON ===== */
@@ -69,7 +83,7 @@
   background: none !important;
   border: none !important;
   font-size: 20px !important;
-  color: #888 !important;
+  color: #9CA3AF !important;
   cursor: pointer !important;
   width: 36px !important;
   height: 36px !important;
@@ -88,57 +102,51 @@
 .dd-heading {
   font-family: 'Nunito', sans-serif !important;
   font-size: 20px !important;
-  font-weight: 700 !important;
-  color: #3d3d3a !important;
+  font-weight: 600 !important;
+  color: #1B4332 !important;
   margin: 0 0 6px 0 !important;
   text-align: center !important;
 }
 
 .dd-subheading {
-  font-size: 15px !important;
-  color: #888 !important;
+  font-size: 13px !important;
+  color: #6B7280 !important;
   text-align: center !important;
   margin: 0 0 24px 0 !important;
 }
 
 /* ===== PURCHASE INFO ===== */
 .dd-purchase-info {
-  background: rgba(255, 255, 255, 0.7) !important;
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  background: transparent !important;
+  border: none !important;
   border-radius: 12px !important;
-  padding: 14px 16px !important;
+  padding: 0 !important;
   margin: 0 0 20px 0 !important;
   text-align: center !important;
 }
 
 .dd-purchase-site {
-  font-size: 13px !important;
-  color: #888 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.5px !important;
-  margin: 0 0 4px 0 !important;
+  font-size: 12px !important;
+  color: #9CA3AF !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  margin: 0 !important;
 }
 
 .dd-purchase-product {
-  font-size: 15px !important;
-  font-weight: 600 !important;
-  color: #3d3d3a !important;
-  margin: 0 0 4px 0 !important;
+  display: none !important;
 }
 
 .dd-purchase-price {
-  font-size: 18px !important;
-  font-weight: 700 !important;
-  color: #1D9E75 !important;
-  margin: 0 !important;
+  display: none !important;
 }
 
 /* ===== QUESTION ===== */
 .dd-question {
   font-family: 'Nunito', sans-serif !important;
-  font-size: 18px !important;
-  font-weight: 600 !important;
-  color: #3d3d3a !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  color: #4A5568 !important;
   text-align: center !important;
   margin: 0 0 18px 0 !important;
 }
@@ -156,9 +164,10 @@
   align-items: center !important;
   gap: 14px !important;
   padding: 16px 18px !important;
-  border: 1.5px solid rgba(0, 0, 0, 0.08) !important;
-  border-radius: 12px !important;
-  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid #E8E4D9 !important;
+  border-left: 3px solid #E8E4D9 !important;
+  border-radius: 10px !important;
+  background: #FFFFFF !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
   text-align: left !important;
@@ -167,8 +176,8 @@
 }
 
 .dd-choice-card:hover {
-  border-color: #1D9E75 !important;
-  background: rgba(29, 158, 117, 0.04) !important;
+  border-color: #E8E4D9 !important;
+  background: #F0F7F4 !important;
   transform: translateY(-1px) !important;
 }
 
@@ -177,7 +186,13 @@
 }
 
 .dd-choice-icon {
-  font-size: 26px !important;
+  display: none !important;
+}
+
+.dd-emotion-dot {
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
   flex-shrink: 0 !important;
 }
 
@@ -188,35 +203,79 @@
 .dd-choice-label {
   display: block !important;
   font-size: 15px !important;
-  font-weight: 700 !important;
-  color: #3d3d3a !important;
+  font-weight: 600 !important;
+  color: #1B4332 !important;
   margin: 0 0 2px 0 !important;
 }
 
 .dd-choice-desc {
   display: block !important;
   font-size: 13px !important;
-  color: #888 !important;
+  color: #6B7280 !important;
 }
 
-/* All choice cards use the same neutral border — no colour-coding */
-.dd-choice-card[data-type="necessary"],
-.dd-choice-card[data-type="planned"],
+/* Classification card accent bars */
 .dd-choice-card[data-type="impulsive"] {
-  border-color: rgba(0, 0, 0, 0.08) !important;
+  border-left: 3px solid #A07830 !important;
+}
+.dd-choice-card[data-type="impulsive"]:hover {
+  background: #FDF8F0 !important;
+  border-left-color: #A07830 !important;
 }
 
-.dd-choice-card[data-type="necessary"]:hover,
-.dd-choice-card[data-type="planned"]:hover,
-.dd-choice-card[data-type="impulsive"]:hover {
-  border-color: #1D9E75 !important;
-  background: rgba(29, 158, 117, 0.04) !important;
+.dd-choice-card[data-type="planned"] {
+  border-left: 3px solid #2D7A5F !important;
+}
+.dd-choice-card[data-type="planned"]:hover {
+  background: #F0F7F4 !important;
+  border-left-color: #2D7A5F !important;
+}
+
+.dd-choice-card[data-type="necessary"] {
+  border-left: 3px solid #1B4332 !important;
+}
+.dd-choice-card[data-type="necessary"]:hover {
+  background: #F0F4F2 !important;
+  border-left-color: #1B4332 !important;
+}
+
+/* Emotion card accent bars */
+.dd-choice-card[data-emotion="stress"] {
+  border-left: 3px solid #7B9EA6 !important;
+}
+.dd-choice-card[data-emotion="stress"]:hover {
+  background: #F0F4F6 !important;
+  border-left-color: #7B9EA6 !important;
+}
+
+.dd-choice-card[data-emotion="bored"] {
+  border-left: 3px solid #A07830 !important;
+}
+.dd-choice-card[data-emotion="bored"]:hover {
+  background: #FDF8F0 !important;
+  border-left-color: #A07830 !important;
+}
+
+.dd-choice-card[data-emotion="treat"] {
+  border-left: 3px solid #2D7A5F !important;
+}
+.dd-choice-card[data-emotion="treat"]:hover {
+  background: #F0F7F4 !important;
+  border-left-color: #2D7A5F !important;
+}
+
+.dd-choice-card[data-emotion="habit"] {
+  border-left: 3px solid #9CA3AF !important;
+}
+.dd-choice-card[data-emotion="habit"]:hover {
+  background: #F4F4F5 !important;
+  border-left-color: #9CA3AF !important;
 }
 
 /* ===== HONESTY NOTE ===== */
 .dd-honesty {
-  font-size: 13px !important;
-  color: #888 !important;
+  font-size: 12px !important;
+  color: #9CA3AF !important;
   text-align: center !important;
   margin: 0 0 8px 0 !important;
   font-style: italic !important;
@@ -261,10 +320,10 @@
   flex-direction: column !important;
   align-items: center !important;
   gap: 6px !important;
-  padding: 16px 10px !important;
-  background: rgba(255, 255, 255, 0.8) !important;
-  border: 1.5px solid rgba(0, 0, 0, 0.06) !important;
-  border-radius: 12px !important;
+  padding: 12px !important;
+  background: #FFFFFF !important;
+  border: 1px solid #E8E4D9 !important;
+  border-radius: 10px !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
   text-align: center !important;
@@ -272,9 +331,14 @@
 }
 
 .dd-alt-tile:hover {
-  border-color: #1D9E75 !important;
-  background: rgba(29, 158, 117, 0.04) !important;
+  border-color: #2D7A5F !important;
+  background: #F0F7F4 !important;
   transform: translateY(-1px) !important;
+}
+
+.dd-alt-selected {
+  border-color: #2D7A5F !important;
+  background: #F0F7F4 !important;
 }
 
 .dd-alt-icon {
@@ -282,16 +346,23 @@
 }
 
 .dd-alt-category {
-  font-size: 11px !important;
-  font-weight: 700 !important;
-  color: #1D9E75 !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  color: #2D7A5F !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.5px !important;
+  letter-spacing: 0.08em !important;
 }
 
 .dd-alt-label {
   font-size: 13px !important;
-  color: #666 !important;
+  font-weight: 600 !important;
+  color: #1B4332 !important;
+}
+
+.dd-alt-desc {
+  font-size: 12px !important;
+  color: #6B7280 !important;
+  line-height: 1.4 !important;
 }
 
 /* ===== TIMER ===== */
@@ -300,42 +371,35 @@
   margin: 0 0 24px 0 !important;
 }
 
-.dd-timer-display {
-  font-size: 32px !important;
-  font-weight: 700 !important;
-  color: #1D9E75 !important;
-  font-variant-numeric: tabular-nums !important;
-  margin: 0 0 4px 0 !important;
-}
-
 .dd-timer-label {
-  font-size: 13px !important;
-  color: #888 !important;
-  margin: 0 0 12px 0 !important;
+  font-size: 12px !important;
+  color: #9CA3AF !important;
+  margin: 4px 0 0 0 !important;
 }
 
 .dd-breathe-text {
-  font-size: 15px !important;
-  color: #1D9E75 !important;
-  animation: dd-breathe 4s ease-in-out infinite !important;
+  font-size: 12px !important;
+  color: #9CA3AF !important;
+  font-style: italic !important;
+  animation: none !important;
   margin: 0 0 12px 0 !important;
 }
 
 .dd-progress-bar {
   width: 100% !important;
   height: 4px !important;
-  background: rgba(29, 158, 117, 0.12) !important;
+  background: #E8E4D9 !important;
   border-radius: 2px !important;
   overflow: hidden !important;
-  margin: 0 0 8px 0 !important;
+  margin: 0 !important;
 }
 
 .dd-progress-fill {
   height: 100% !important;
-  background: #1D9E75 !important;
+  background: #2D7A5F !important;
   border-radius: 2px !important;
   transition: width 1s linear !important;
-  width: 0% !important;
+  width: 100% !important;
 }
 
 /* ===== PRIMARY CTA BUTTON ===== */
@@ -344,12 +408,12 @@
   width: 100% !important;
   height: 52px !important;
   padding: 0 24px !important;
-  background: #1D9E75 !important;
+  background: #1B4332 !important;
   color: #FFFFFF !important;
   border: none !important;
   border-radius: 10px !important;
   font-size: 16px !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
   font-family: 'Nunito', sans-serif !important;
@@ -357,7 +421,7 @@
 }
 
 .dd-save-btn:hover {
-  background: #178e68 !important;
+  background: #163a2b !important;
   transform: translateY(-1px) !important;
 }
 
@@ -365,8 +429,8 @@
 .dd-proceed-link {
   display: block !important;
   text-align: center !important;
-  font-size: 14px !important;
-  color: #888 !important;
+  font-size: 13px !important;
+  color: #9CA3AF !important;
   background: none !important;
   border: none !important;
   cursor: pointer !important;
@@ -377,7 +441,7 @@
 }
 
 .dd-proceed-link:hover {
-  color: #666 !important;
+  color: #6B7280 !important;
 }
 
 /* ===== POINTS NOTIFICATION ===== */

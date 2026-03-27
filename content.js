@@ -31,6 +31,8 @@
 
   let overlayActive = false;
   let timerInterval = null;
+  let currentEmotion = null;
+  let currentDarkPatterns = [];
 
   // ===== INITIALISATION =====
 
@@ -46,6 +48,10 @@
       // Default to true so overlay works without completing onboarding
       const onboarded = dd_onboarded !== false;
       if (!onboarded) return;
+
+      // Check if paused
+      const { dd_paused } = await chrome.storage.local.get('dd_paused');
+      if (dd_paused) return;
 
       // Check if this site is disabled
       const hostname = window.location.hostname.replace(/^www\./, '');
@@ -305,6 +311,8 @@
 
     const productInfo = extractProductInfo();
     const darkPatterns = detectDarkPatterns();
+    currentDarkPatterns = darkPatterns;
+    currentEmotion = null;
     const settings = await DDStorage.getSettings();
 
     // Record pause
@@ -339,30 +347,28 @@
 
     overlay.innerHTML = `
       <div class="dd-modal">
+        <span class="dd-brand-label">Dopamine Delay</span>
         <button class="dd-close-btn" title="Close" aria-label="Close">&times;</button>
         ${darkPatternHTML}
-        <h2 class="dd-heading">Pause before you pay</h2>
+        <h2 class="dd-heading">Before you buy</h2>
         ${purchaseInfoHTML}
-        <p class="dd-question">What kind of purchase is this?</p>
+        <p class="dd-question">What's this one?</p>
         <div class="dd-choices">
           <button class="dd-choice-card" data-type="impulsive">
-            <span class="dd-choice-icon">⚡</span>
             <span class="dd-choice-content">
-              <span class="dd-choice-label">IMPULSIVE</span>
+              <span class="dd-choice-label">Impulsive</span>
               <span class="dd-choice-desc">I just want it right now</span>
             </span>
           </button>
           <button class="dd-choice-card" data-type="planned">
-            <span class="dd-choice-icon">📋</span>
             <span class="dd-choice-content">
-              <span class="dd-choice-label">PLANNED</span>
-              <span class="dd-choice-desc">I've been thinking about this for a while</span>
+              <span class="dd-choice-label">Planned</span>
+              <span class="dd-choice-desc">I've been thinking about this</span>
             </span>
           </button>
           <button class="dd-choice-card" data-type="necessary">
-            <span class="dd-choice-icon">✅</span>
             <span class="dd-choice-content">
-              <span class="dd-choice-label">NECESSARY</span>
+              <span class="dd-choice-label">Necessary</span>
               <span class="dd-choice-desc">I genuinely need this</span>
             </span>
           </button>
@@ -410,6 +416,7 @@
             choiceType: type,
             outcome: type === 'impulsive' ? 'redirected' : 'bought',
             pointsEarned: 5,
+            dark_patterns_detected: darkPatterns.length > 0 ? darkPatterns : null,
           },
         });
 
@@ -421,7 +428,7 @@
           showPlannedScreen(overlay, productInfo);
         } else if (type === 'impulsive') {
           showPointsToast('+5 Delay Points');
-          showEmotionalCheckIn(overlay, productInfo, settings);
+          showEmotionalCheckIn(overlay, productInfo);
         }
       });
     });
@@ -432,6 +439,7 @@
   function showAffirmation(overlay) {
     const modal = overlay.querySelector('.dd-modal');
     modal.innerHTML = `
+      <span class="dd-brand-label">Dopamine Delay</span>
       <div class="dd-affirmation">
         <span class="dd-affirmation-icon">💚</span>
         <p class="dd-affirmation-text">Nice one. You've got this.</p>
@@ -449,21 +457,20 @@
   async function showPlannedScreen(overlay, productInfo) {
     const modal = overlay.querySelector('.dd-modal');
     modal.innerHTML = `
+      <span class="dd-brand-label">Dopamine Delay</span>
       <button class="dd-close-btn" title="Close" aria-label="Close">&times;</button>
       <h2 class="dd-heading">Good thinking.</h2>
       <p class="dd-subheading">Since you have been planning this, do you want to save it to your list to buy at the right moment?</p>
       <div class="dd-choices" style="margin-top: 16px;">
         <button class="dd-choice-card" id="dd-planned-save">
-          <span class="dd-choice-icon">💾</span>
           <span class="dd-choice-content">
-            <span class="dd-choice-label">SAVE TO MY LIST</span>
+            <span class="dd-choice-label">Save to my list</span>
             <span class="dd-choice-desc">I will buy it when the time is right</span>
           </span>
         </button>
         <button class="dd-choice-card" id="dd-planned-buy">
-          <span class="dd-choice-icon">✅</span>
           <span class="dd-choice-content">
-            <span class="dd-choice-label">BUY NOW</span>
+            <span class="dd-choice-label">Buy now</span>
             <span class="dd-choice-desc">I am ready — this is the right moment</span>
           </span>
         </button>
@@ -490,7 +497,8 @@
             price: productInfo.price,
             choiceType: 'planned',
             outcome: 'saved',
-            pointsEarned: 15
+            pointsEarned: 15,
+            dark_patterns_detected: currentDarkPatterns.length > 0 ? currentDarkPatterns : null,
           }
         });
         showPointsToast('+15 Delay Points — smart save!');
@@ -505,38 +513,39 @@
 
   // ===== EMOTIONAL CHECK-IN =====
 
-  async function showEmotionalCheckIn(overlay, productInfo, settings) {
+  async function showEmotionalCheckIn(overlay, productInfo) {
     const modal = overlay.querySelector('.dd-modal');
     modal.innerHTML = `
+      <span class="dd-brand-label">Dopamine Delay</span>
       <button class="dd-close-btn" title="Close" aria-label="Close">&times;</button>
-      <h2 class="dd-heading">One quick thing...</h2>
-      <p class="dd-subheading">What is driving this right now? No wrong answers — just helps us help you.</p>
+      <h2 class="dd-heading">What's driving this?</h2>
+      <p class="dd-subheading">No wrong answers — this helps us find the right alternative for you.</p>
       <div class="dd-choices" style="gap:8px;">
         <button class="dd-choice-card dd-emotion-btn" data-emotion="stress">
-          <span class="dd-choice-icon">😤</span>
+          <span class="dd-emotion-dot" style="background:#7B9EA6"></span>
           <span class="dd-choice-content">
-            <span class="dd-choice-label">STRESSED</span>
+            <span class="dd-choice-label">Stressed</span>
             <span class="dd-choice-desc">Overwhelmed or anxious right now</span>
           </span>
         </button>
         <button class="dd-choice-card dd-emotion-btn" data-emotion="bored">
-          <span class="dd-choice-icon">😴</span>
+          <span class="dd-emotion-dot" style="background:#A07830"></span>
           <span class="dd-choice-content">
-            <span class="dd-choice-label">BORED</span>
+            <span class="dd-choice-label">Bored</span>
             <span class="dd-choice-desc">Nothing else is doing it for me</span>
           </span>
         </button>
         <button class="dd-choice-card dd-emotion-btn" data-emotion="treat">
-          <span class="dd-choice-icon">🎉</span>
+          <span class="dd-emotion-dot" style="background:#2D7A5F"></span>
           <span class="dd-choice-content">
-            <span class="dd-choice-label">TREATING MYSELF</span>
+            <span class="dd-choice-label">Treating myself</span>
             <span class="dd-choice-desc">I am in a good mood and feeling it</span>
           </span>
         </button>
         <button class="dd-choice-card dd-emotion-btn" data-emotion="habit">
-          <span class="dd-choice-icon">😶</span>
+          <span class="dd-emotion-dot" style="background:#9CA3AF"></span>
           <span class="dd-choice-content">
-            <span class="dd-choice-label">JUST BROWSING</span>
+            <span class="dd-choice-label">Just browsing</span>
             <span class="dd-choice-desc">Honestly not sure how I got here</span>
           </span>
         </button>
@@ -549,54 +558,52 @@
     modal.querySelectorAll('.dd-emotion-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const emotion = btn.dataset.emotion;
+        currentEmotion = emotion;
         // Store emotion for analytics (scoped to user)
         DDStorage.set(DDStorage.KEYS.LAST_EMOTION, emotion);
-        showScreen2(overlay, productInfo, settings, emotion);
+        showScreen2(overlay, productInfo, emotion);
       });
     });
   }
 
   // ===== SCREEN 2: REDIRECT THAT ENERGY =====
 
-  // Full alternatives library
+  // Curated alternatives — all internal, no external links
   const ALL_ALTERNATIVES = [
-    // HIGH DOPAMINE — novelty/excitement (good for: treat, habit, bored)
-    { id: 'neal', icon: '🎮', category: 'Play', label: 'Something delightful', action: 'external', url: 'https://neal.fun', tags: ['bored', 'habit', 'treat'] },
-    { id: 'spotify_discover', icon: '🎵', category: 'Music', label: 'Discover something new', action: 'external', url: 'https://open.spotify.com/section/0JQ5DAqbMKFQ00XGBls6ym', tags: ['bored', 'habit', 'treat', 'stress'] },
-    { id: 'wikipedia', icon: '🌍', category: 'Learn', label: 'Random rabbit hole', action: 'external', url: 'https://en.wikipedia.org/wiki/Special:Random', tags: ['bored', 'habit'] },
-    { id: 'wordle', icon: '🧩', category: 'Puzzle', label: "Today's Wordle", action: 'external', url: 'https://www.nytimes.com/games/wordle/index.html', tags: ['bored', 'habit', 'treat'] },
-    { id: 'connections', icon: '🔗', category: 'Puzzle', label: "Today's Connections", action: 'external', url: 'https://www.nytimes.com/games/connections', tags: ['bored', 'habit'] },
-    { id: 'price_hunt', icon: '🎯', category: 'Challenge', label: 'Find it cheaper in 5 mins', action: 'inline', detail: 'Open a new tab and search for the same item on Google Shopping. If you find it cheaper, great. If not, you have spent 5 minutes thinking about it — still want it?', tags: ['treat', 'habit'] },
-
-    // EMOTIONAL REGULATION — for stress and overwhelm
-    { id: 'box_breathing', icon: '🌬️', category: 'Calm', label: 'Box breathing — 60 seconds', action: 'inline', detail: 'Breathe IN for 4 counts. HOLD for 4. OUT for 4. HOLD for 4. Repeat 4 times. This activates your parasympathetic nervous system and reduces the urgency feeling.', tags: ['stress', 'bored'] },
-    { id: 'body_scan', icon: '🧘', category: 'Calm', label: '30-second body scan', action: 'inline', detail: 'Close your eyes. Notice your feet. Your legs. Your stomach — is it tight? Your chest. Your shoulders. Your jaw. Where are you holding tension right now? That tension is not fixed by buying something.', tags: ['stress'] },
-    { id: 'write_feeling', icon: '✍️', category: 'Reflect', label: 'Write what you are feeling', action: 'inline', detail: 'Name it: I am feeling _______ right now, and I want to buy this because _______. You do not have to save it. Just name it.', tags: ['stress', 'bored'] },
-    { id: 'water', icon: '💧', category: 'Reset', label: 'Drink water, wait 3 minutes', action: 'inline', detail: 'Get up. Get a glass of water. Drink it slowly. Set a 3-minute timer. Come back and see if you still feel the same urgency. Dehydration increases impulsivity — seriously.', tags: ['stress', 'habit', 'bored'] },
-
-    // MOVEMENT — proven dopamine release
-    { id: 'walk', icon: '🏃', category: 'Move', label: '2-minute walk', action: 'inline', detail: 'Stand up right now. Walk to another room, or outside if you can. Set a 2-minute timer. Physical movement raises dopamine naturally — this is not a trick, it is neuroscience.', tags: ['stress', 'bored', 'habit'] },
-    { id: 'dance', icon: '🕺', category: 'Move', label: 'Watch something on YouTube', action: 'external', url: 'https://www.youtube.com', tags: ['bored', 'treat', 'habit'] },
-    { id: 'stretch', icon: '🤸', category: 'Move', label: '5 stretches', action: 'inline', detail: '1. Roll your shoulders back 5 times. 2. Reach both arms up and stretch. 3. Neck rolls — slow, each side. 4. Shake out your hands. 5. Take one big breath and let it go. Done.', tags: ['stress', 'habit'] },
-
-    // SOCIAL CONNECTION
-    { id: 'text_friend', icon: '💬', category: 'Connect', label: 'Text someone something nice', action: 'inline', detail: 'Think of one person who would appreciate a message right now. Send them something — a compliment, a memory, a stupid meme. Social connection releases oxytocin, which competes directly with the buying urge.', tags: ['stress', 'bored', 'treat'] },
-    { id: 'call', icon: '📞', category: 'Connect', label: 'Call someone for 5 minutes', action: 'inline', detail: 'Who have you been meaning to call? Do it now — 5 minutes maximum. The shopping will still be there. The urge probably will not be.', tags: ['stress', 'bored'] },
-
-    // FINANCIAL REALITY
-    { id: 'bank_check', icon: '💰', category: 'Reality check', label: 'Check your balance first', action: 'inline', detail: 'Open your banking app and look at your actual balance before you decide. Not your available credit — your actual balance. How does this purchase feel now?', tags: ['habit', 'treat'] },
-    { id: 'work_hours', icon: '⏱️', category: 'Reality check', label: 'How many hours is this?', action: 'inline', detail: 'Think about how long you had to work to earn the money for this. Is this item worth that many hours of your life? Sometimes it is. Sometimes that changes things.', tags: ['habit', 'treat', 'stress'] },
-    { id: 'saved_list', icon: '📋', category: 'Reality check', label: 'Check your saved list', action: 'inline', detail: 'You have already saved some things for later. Go check if any of them are still calling you — maybe something on your list matters more than this does right now.', tags: ['habit', 'treat'] },
-
-    // SLEEP ON IT — for higher value items
-    { id: 'sleep', icon: '🌙', category: 'Sleep on it', label: 'Remind me tomorrow', action: 'inline', detail: 'Research shows desire for impulse purchases drops significantly within 24 hours. Set a reminder and come back tomorrow. If you still want it, buy it.', tags: ['stress', 'bored', 'habit', 'treat'] },
-    { id: 'youtube', icon: '▶️', category: 'Watch', label: 'Watch something on YouTube', action: 'external', url: 'https://www.youtube.com', tags: ['bored', 'habit', 'treat'] }
+    { id: 'box_breathing', category: 'Calm', label: 'Box breathing \u2014 4 counts in, hold, out, hold', desc: 'Interrupts the urgency physically. 60 seconds.', tags: ['STRESSED', 'EXCITED'], action: 'internal' },
+    { id: 'body_scan', category: 'Calm', label: '30-second body scan', desc: 'Close your eyes. Notice feet, legs, chest, hands.', tags: ['STRESSED', 'BORED'], action: 'internal' },
+    { id: '478_breathing', category: 'Calm', label: '4-7-8 breathing', desc: 'In for 4, hold for 7, out for 8. Designed for anxiety.', tags: ['STRESSED'], action: 'internal' },
+    { id: 'write_feeling', category: 'Reflect', label: 'Write what you are feeling', desc: 'Three sentences. No wrong answers.', tags: ['STRESSED', 'BORED', 'TREATING MYSELF', 'JUST BROWSING'], action: 'internal' },
+    { id: 'micro_journal', category: 'Reflect', label: 'Quick check-in \u2014 how did you get here?', desc: 'What were you feeling? What triggered this?', tags: ['STRESSED', 'BORED', 'JUST BROWSING'], action: 'internal' },
+    { id: 'wordle', category: 'Puzzle', label: "Today's Wordle", desc: 'One puzzle. The win feels genuinely good.', tags: ['BORED', 'TREATING MYSELF'], action: 'internal' },
+    { id: 'connections', category: 'Puzzle', label: "Today's Connections", desc: '4 groups. Satisfying when it clicks.', tags: ['BORED', 'TREATING MYSELF'], action: 'internal' },
+    { id: 'sketch', category: 'Creative', label: 'Sketch something nearby', desc: 'Pick one object and draw it. 5 minutes.', tags: ['BORED', 'STRESSED', 'JUST BROWSING'], action: 'internal' },
+    { id: 'wishlist', category: 'Creative', label: 'Add it to a wishlist instead', desc: "Write why you want it. The wanting gets heard.", tags: ['TREATING MYSELF', 'EXCITED', 'JUST BROWSING'], action: 'internal' },
+    { id: 'walk', category: 'Move', label: '2-minute walk', desc: 'Change of environment interrupts the impulse loop.', tags: ['BORED', 'STRESSED', 'TREATING MYSELF'], action: 'internal' },
+    { id: 'dance', category: 'Move', label: 'Dance to one song', desc: 'One song. Full commitment. The dopamine hit is real.', tags: ['BORED', 'TREATING MYSELF', 'EXCITED'], action: 'internal' },
+    { id: 'stretch', category: 'Move', label: '5 desk stretches', desc: 'Neck, shoulders, forward fold. Your body has been still.', tags: ['STRESSED', 'BORED'], action: 'internal' },
+    { id: 'jump_sequence', category: 'Move', label: '10 jumping jacks, 10 squats', desc: 'Fast, free, effective. Strongest biological redirect.', tags: ['EXCITED', 'BORED', 'TREATING MYSELF'], action: 'internal' },
+    { id: 'text_friend', category: 'Connect', label: 'Text someone something nice', desc: 'Social reward activates the same pathway as purchases.', tags: ['BORED', 'STRESSED', 'JUST BROWSING'], action: 'internal' },
+    { id: 'voice_note', category: 'Reflect', label: 'Record a 60-second voice note', desc: "Say what you're feeling. You don't have to send it.", tags: ['STRESSED', 'BORED', 'JUST BROWSING'], action: 'internal' },
+    { id: 'bank_check', category: 'Reality check', label: 'Check your balance first', desc: 'Makes the abstract future concrete and immediate.', tags: ['TREATING MYSELF', 'JUST BROWSING', 'EXCITED'], action: 'internal' },
+    { id: 'work_hours', category: 'Reality check', label: 'How many hours of work is this?', desc: 'Converts price to time. Changes perspective.', tags: ['JUST BROWSING', 'EXCITED'], action: 'internal' },
+    { id: 'sleep', category: 'Sleep on it', label: 'Remind me tomorrow', desc: 'Most of the time, the wanting fades on its own.', tags: ['TREATING MYSELF', 'EXCITED', 'JUST BROWSING', 'STRESSED', 'BORED'], action: 'internal' },
+    { id: 'water', category: 'Reset', label: 'Drink water, wait 3 minutes', desc: 'Simple. Physical. Surprisingly effective.', tags: ['STRESSED', 'BORED', 'JUST BROWSING'], action: 'internal' },
   ];
+
+  // Map emotion data-attributes to tag values used in ALL_ALTERNATIVES
+  const EMOTION_TO_TAG = {
+    'stress': 'STRESSED',
+    'bored': 'BORED',
+    'treat': 'TREATING MYSELF',
+    'habit': 'JUST BROWSING',
+  };
 
   // Select 4 alternatives based on emotion
   function getAlternativesForEmotion(emotion) {
-    const matching = ALL_ALTERNATIVES.filter(a => a.tags.includes(emotion));
-    const nonMatching = ALL_ALTERNATIVES.filter(a => !a.tags.includes(emotion));
+    const tag = EMOTION_TO_TAG[emotion] || emotion;
+    const matching = ALL_ALTERNATIVES.filter(a => a.tags.includes(tag));
+    const nonMatching = ALL_ALTERNATIVES.filter(a => !a.tags.includes(tag));
     // Shuffle matching ones
     const shuffled = matching.sort(() => Math.random() - 0.5);
     // Take 3 emotion-matched + 1 wildcard for novelty
@@ -606,40 +613,40 @@
     return selected.slice(0, 4);
   }
 
-  async function showScreen2(overlay, productInfo, settings, emotion = 'habit') {
+  async function showScreen2(overlay, productInfo, emotion = 'habit') {
     const modal = overlay.querySelector('.dd-modal');
     const alternatives = getAlternativesForEmotion(emotion);
-    const pauseDuration = (settings && settings.pauseDuration) || 10;
+    const pauseDuration = await DDStorage.getEffectivePauseDuration(productInfo.price);
 
     const priceNum = parseFloat((productInfo.price || '0').replace(/[^0-9.]/g, ''));
     let remaining = pauseDuration;
 
     const altTilesHTML = alternatives.map(alt => `
-      <button class="dd-alt-tile" data-id="${alt.id}" data-action="${alt.action}" ${alt.url ? `data-url="${alt.url}"` : ''} ${alt.detail ? `data-detail="${escapeHTML(alt.detail)}"` : ''}>
-        <span class="dd-alt-icon">${alt.icon}</span>
+      <button class="dd-alt-tile" data-id="${alt.id}" data-category="${alt.category}" data-desc="${escapeHTML(alt.desc)}">
         <span class="dd-alt-category">${alt.category}</span>
         <span class="dd-alt-label">${alt.label}</span>
+        <span class="dd-alt-desc">${alt.desc}</span>
       </button>
     `).join('');
 
     modal.innerHTML = `
+      <span class="dd-brand-label">Dopamine Delay</span>
       <button class="dd-close-btn" title="Close" aria-label="Close">&times;</button>
-      <h2 class="dd-heading">Take a breath</h2>
+      <h2 class="dd-heading" style="font-size:18px !important;">Your pause</h2>
       <p class="dd-subheading">Your brain wants a hit of something. Here are some ways to get it without spending.</p>
 
       <div class="dd-alternatives-grid">
         ${altTilesHTML}
       </div>
 
-      <div id="dd-alt-detail" class="dd-detail-box" style="display: none !important;"></div>
+      <div id="dd-alt-detail" class="dd-detail-box" style="display: none;"></div>
 
       <div class="dd-timer-section">
-        <p class="dd-breathe-text">Breathe in... breathe out...</p>
-        <p class="dd-timer-display" id="dd-timer">${remaining}</p>
-        <p class="dd-timer-label">seconds remaining</p>
+        <p class="dd-breathe-text">Take a moment.</p>
         <div class="dd-progress-bar">
-          <div class="dd-progress-fill" id="dd-progress"></div>
+          <div class="dd-progress-fill" id="dd-progress" style="width:100%"></div>
         </div>
+        <p class="dd-timer-label" id="dd-timer">Pausing for ${remaining} more seconds</p>
       </div>
 
       <button class="dd-save-btn" id="dd-save-btn">Keep waiting — save for later</button>
@@ -659,36 +666,42 @@
 
     timerInterval = setInterval(() => {
       remaining--;
-      if (timerEl) timerEl.textContent = remaining;
+      if (timerEl) timerEl.textContent = 'Pausing for ' + remaining + ' more seconds';
       if (progressEl) {
-        const pct = ((pauseDuration - remaining) / pauseDuration) * 100;
+        const pct = (remaining / pauseDuration) * 100;
         progressEl.style.width = pct + '%';
       }
       if (remaining <= 0) {
         clearInterval(timerInterval);
         timerInterval = null;
-        if (timerEl) timerEl.textContent = '0';
+        if (timerEl) timerEl.textContent = '';
         if (proceedBtn) {
           proceedBtn.disabled = false;
           proceedBtn.textContent = 'I still want to buy';
-          proceedBtn.style.color = '#888';
+          proceedBtn.style.color = '#9CA3AF';
         }
       }
     }, 1000);
 
-    // Alternative tiles
+    // Alternative tiles — all internal, track selection
     modal.querySelectorAll('.dd-alt-tile').forEach(tile => {
       tile.addEventListener('click', () => {
-        const action = tile.dataset.action;
-        if (action === 'external' && tile.dataset.url) {
-          window.open(tile.dataset.url, '_blank');
-        } else if (action === 'inline' && tile.dataset.detail) {
-          const detailBox = document.getElementById('dd-alt-detail');
-          if (detailBox) {
-            detailBox.textContent = tile.dataset.detail;
-            detailBox.style.display = 'block';
-          }
+        // Track which alternative was selected
+        const altId = tile.dataset.id;
+        const altCategory = tile.dataset.category;
+        DDStorage.set(DDStorage.KEYS.LAST_ALTERNATIVE, altId);
+        DDStorage.set(DDStorage.KEYS.LAST_ALTERNATIVE_CATEGORY, altCategory);
+
+        // Show description in detail box
+        const detailBox = document.getElementById('dd-alt-detail');
+        if (detailBox && tile.dataset.desc) {
+          detailBox.textContent = tile.dataset.desc;
+          detailBox.style.display = 'block';
         }
+
+        // Highlight selected tile
+        modal.querySelectorAll('.dd-alt-tile').forEach(t => t.classList.remove('dd-alt-selected'));
+        tile.classList.add('dd-alt-selected');
       });
     });
 
@@ -702,6 +715,10 @@
       });
       await DDStorage.addPoints(15);
 
+      // Read last selected alternative before sending
+      const lastAlt = await DDStorage.get(DDStorage.KEYS.LAST_ALTERNATIVE);
+      const lastAltCat = await DDStorage.get(DDStorage.KEYS.LAST_ALTERNATIVE_CATEGORY);
+
       // Sync to Supabase via background
       chrome.runtime.sendMessage({
         type: 'PAUSE_EVENT',
@@ -712,6 +729,10 @@
           choiceType: 'impulsive',
           outcome: 'saved',
           pointsEarned: 15,
+          emotional_state: emotion || currentEmotion || null,
+          alternative_chosen: lastAlt || null,
+          alternative_category: lastAltCat || null,
+          dark_patterns_detected: currentDarkPatterns.length > 0 ? currentDarkPatterns : null,
         },
       });
 
