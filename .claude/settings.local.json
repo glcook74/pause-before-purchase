@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git push:*)",
+      "Bash(python:*)",
+      "Bash(grep -r \"extension\\\\|onboarding\" /c/Users/glcoo/pause-before-purchase-c81053f6/src --include=*.tsx --include=*.ts)",
+      "Bash(grep -r \"onboarding\\\\|extension\" /c/Users/glcoo/pause-before-purchase-c81053f6 --include=*.tsx --include=*.ts --include=*.jsx --include=*.js --include=*.json)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git rm:*)"
+    ]
+  }
+}
