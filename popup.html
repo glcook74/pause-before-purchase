@@ -114,6 +114,48 @@
       border-radius: 8px;
       padding: 8px 12px;
     }
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 4px 0;
+    }
+    .auth-divider::before,
+    .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(0, 0, 0, 0.08);
+    }
+    .auth-divider span {
+      font-size: 12px;
+      color: #bbb;
+      font-weight: 600;
+    }
+    .auth-web-link {
+      display: block;
+      text-align: center;
+      padding: 12px 16px;
+      background: rgba(29, 158, 117, 0.06);
+      border: 1.5px solid rgba(29, 158, 117, 0.15);
+      border-radius: 12px;
+      color: #1D9E75;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .auth-web-link:hover {
+      background: rgba(29, 158, 117, 0.12);
+      border-color: rgba(29, 158, 117, 0.3);
+    }
+    .auth-web-hint {
+      font-size: 11px;
+      color: #aaa;
+      text-align: center;
+      margin: 4px 0 0;
+    }
 
     /* ===== HEADER ===== */
     .dd-header {
@@ -473,6 +515,13 @@
     <input type="password" id="auth-password" placeholder="Password" autocomplete="current-password" />
     <p id="auth-error"></p>
     <button class="btn-signin" id="btn-signin">Sign in</button>
+    <div class="auth-divider">
+      <span>or</span>
+    </div>
+    <a class="auth-web-link" href="https://dopaminedelay.com/login" target="_blank" id="link-web-signin">
+      Sign in at dopaminedelay.com first, then come back here
+    </a>
+    <p class="auth-web-hint">The extension will detect your session automatically.</p>
     <div class="auth-links">
       <a id="link-signup">Create account</a>
       <a id="link-skip" class="muted">Use without account</a>
