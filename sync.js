@@ -69,6 +69,21 @@ async function syncPauseEvent(data) {
       if (pointsErr) console.warn('[DD] points insert error:', pointsErr.message);
     }
 
+    // 2b. If saved, add to thinking_list
+    if (data.outcome === 'saved') {
+      const { error: thinkErr } = await client.from('thinking_list').insert({
+        user_id: dd_user_id,
+        item_name: data.product,
+        retailer: data.site,
+        price: priceNum,
+        url: data.url,
+        source: 'extension',
+        resolved: false,
+        added_at: new Date().toISOString(),
+      });
+      if (thinkErr) console.warn('[DD] thinking_list insert error:', thinkErr.message);
+    }
+
     // 3. Update user_profiles streak & totals
     try {
       const { data: profile, error: profileErr } = await client
