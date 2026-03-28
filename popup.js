@@ -33,7 +33,7 @@ function sanitizeURL(url) {
 }
 const WEB_APP_ORIGINS = ['https://dopaminedelay.com', 'https://www.dopaminedelay.com'];
 // Project ref extracted from SUPABASE_URL for bridge session key
-const SUPABASE_PROJECT_REF = 'mmryahqwrbwgbqnaapki';
+const SUPABASE_PROJECT_REF = 'eimvpjrvnbsuqbtuxqmp';
 
 let popupSupabase = null;
 
@@ -277,7 +277,7 @@ async function loginFromSession(session) {
       });
 
       const { data: profile } = await client
-        .from('profiles')
+        .from('user_profiles')
         .select('total_points, current_streak, is_pro')
         .eq('id', userId)
         .single();
@@ -415,7 +415,7 @@ btnSignin.addEventListener('click', async () => {
 
     // Fetch profile from Supabase
     const { data: profile } = await client
-      .from('profiles')
+      .from('user_profiles')
       .select('total_points, current_streak, is_pro')
       .eq('id', userId)
       .single();
