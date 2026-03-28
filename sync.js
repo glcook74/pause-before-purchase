@@ -62,7 +62,7 @@ async function syncPauseEvent(data) {
       const { error: pointsErr } = await client.from('points').insert({
         user_id: dd_user_id,
         source: 'extension',
-        amount: pointsEarned,
+        points_earned: pointsEarned,
         reason: isDelayed ? 'delayed_purchase' : 'pause',
       });
       if (pointsErr) console.error('[DD] Update error:', JSON.stringify(pointsErr));
