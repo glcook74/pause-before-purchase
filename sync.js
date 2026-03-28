@@ -14,6 +14,10 @@ function parsePriceNumber(priceStr) {
 async function syncPauseEvent(data) {
   const { dd_user_id } = await chrome.storage.local.get('dd_user_id');
   if (!dd_user_id) return; // local-only mode, no sync
+  console.log('[DD] Syncing pause event for user:', dd_user_id);
+
+  // Ensure DDStorage knows the active user for scoped key access
+  DDStorage.setActiveUser(dd_user_id);
 
   const client = getSupabaseClient();
   if (!client) {
@@ -22,88 +26,101 @@ async function syncPauseEvent(data) {
   }
 
   try {
-    // Restore session first
-    await restoreSession();
-
-    // 1. Fetch current profile for streak calculation
-    const { data: profile, error: profileErr } = await client
-      .from('profiles')
-      .select('total_points, total_pauses, current_streak, longest_streak, last_pause_date, money_saved_estimate, total_saved')
-      .eq('id', dd_user_id)
-      .single();
-
-    if (profileErr) throw profileErr;
-
-    // 2. Calculate streak
-    const today = new Date().toISOString().split('T')[0];
-    const lastPause = profile.last_pause_date;
-    let newStreak = profile.current_streak;
-
-    if (lastPause === today) {
-      // Same day, no streak change
-    } else if (lastPause) {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split('T')[0];
-      newStreak = lastPause === yesterdayStr ? profile.current_streak + 1 : 1;
-    } else {
-      newStreak = 1;
+    // Restore session first — if it fails, don't queue (auth is broken)
+    const session = await restoreSession();
+    if (!session) {
+      console.warn('[DD] No valid session, skipping sync');
+      return;
     }
 
-    const newLongest = Math.max(newStreak, profile.longest_streak);
     const pointsEarned = data.pointsEarned || data.points_earned || 0;
-    const priceSaved = data.outcome === 'saved' ? parsePriceNumber(data.price) : 0;
+    const priceNum = parsePriceNumber(data.price);
+    const isDelayed = data.outcome === 'saved' || data.outcome === 'redirected';
 
-    // 3. Update profile
-    const { error: updateErr } = await client
-      .from('profiles')
-      .update({
-        total_points: profile.total_points + pointsEarned,
-        total_pauses: profile.total_pauses + 1,
-        current_streak: newStreak,
-        longest_streak: newLongest,
-        last_pause_date: today,
-        money_saved_estimate: profile.money_saved_estimate + priceSaved,
-        total_saved: data.outcome === 'saved' ? profile.total_saved + 1 : profile.total_saved,
-      })
-      .eq('id', dd_user_id);
-
-    if (updateErr) throw updateErr;
-
-    // 4. Insert pause record
-    const { error: pauseErr } = await client.from('pauses').insert({
+    // 1. Insert into spend_events
+    const spendEvent = {
       user_id: dd_user_id,
+      source: 'extension',
+      action_taken: isDelayed ? 'delayed' : 'bought',
       site: data.site,
       product: data.product || null,
-      price: parsePriceNumber(data.price) || null,
+      price: priceNum || null,
       choice_type: data.choiceType || data.choice_type,
       outcome: data.outcome,
-      points_earned: pointsEarned,
+      emotional_state: data.emotional_state || null,
       alternative_chosen: data.alternative_chosen || null,
-    });
+      alternative_category: data.alternative_category || null,
+      dark_patterns_detected: data.dark_patterns_detected || null,
+    };
 
-    if (pauseErr) throw pauseErr;
+    const { error: spendErr } = await client.from('spend_events').insert(spendEvent);
+    if (spendErr) console.error('[DD] Update error:', JSON.stringify(spendErr));
+    if (spendErr) throw spendErr;
 
-    // 5. If saved, insert into saved_items
-    if (data.outcome === 'saved') {
-      const { error: savedErr } = await client.from('saved_items').insert({
+    // 2. Insert into points table
+    if (pointsEarned > 0) {
+      const { error: pointsErr } = await client.from('points').insert({
         user_id: dd_user_id,
-        site: data.site,
-        product: data.product || null,
-        price: parsePriceNumber(data.price) || null,
-        url: data.url || null,
-        status: 'pending',
+        source: 'extension',
+        amount: pointsEarned,
+        reason: isDelayed ? 'delayed_purchase' : 'pause',
       });
-
-      if (savedErr) console.warn('[DD] saved_items insert error:', savedErr.message);
+      if (pointsErr) console.error('[DD] Update error:', JSON.stringify(pointsErr));
+      if (pointsErr) console.warn('[DD] points insert error:', pointsErr.message);
     }
 
-    // Update local points cache
-    const newTotal = profile.total_points + pointsEarned;
-    await chrome.storage.local.set({
-      dd_points: newTotal,
-      dd_streak: newStreak,
-    });
+    // 3. Update user_profiles streak & totals
+    try {
+      const { data: profile, error: profileErr } = await client
+        .from('user_profiles')
+        .select('total_points, total_pauses, current_streak, longest_streak, last_pause_date, money_saved_estimate, total_saved')
+        .eq('id', dd_user_id)
+        .single();
+
+      if (!profileErr && profile) {
+        const today = new Date().toISOString().split('T')[0];
+        const lastPause = profile.last_pause_date;
+        let newStreak = profile.current_streak || 0;
+
+        if (lastPause === today) {
+          // Same day, no streak change
+        } else if (lastPause) {
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          const yesterdayStr = yesterday.toISOString().split('T')[0];
+          newStreak = lastPause === yesterdayStr ? (profile.current_streak || 0) + 1 : 1;
+        } else {
+          newStreak = 1;
+        }
+
+        const newLongest = Math.max(newStreak, profile.longest_streak || 0);
+        const priceSaved = data.outcome === 'saved' ? priceNum : 0;
+
+        await client
+          .from('user_profiles')
+          .update({
+            total_points: (profile.total_points || 0) + pointsEarned,
+            total_pauses: (profile.total_pauses || 0) + 1,
+            current_streak: newStreak,
+            longest_streak: newLongest,
+            last_pause_date: today,
+            money_saved_estimate: (profile.money_saved_estimate || 0) + priceSaved,
+            total_saved: data.outcome === 'saved' ? (profile.total_saved || 0) + 1 : (profile.total_saved || 0),
+          })
+          .eq('id', dd_user_id);
+
+        await DDStorage.set(DDStorage.KEYS.POINTS, (profile.total_points || 0) + pointsEarned);
+        await DDStorage.set(DDStorage.KEYS.STREAK, newStreak);
+      }
+    } catch (profileErr) {
+      console.warn('[DD] user_profiles update failed (non-critical):', profileErr.message || profileErr);
+    }
+
+    // Update local points cache as fallback
+    if (pointsEarned > 0) {
+      const localPts = await DDStorage.getPoints();
+      await DDStorage.set(DDStorage.KEYS.POINTS, localPts + pointsEarned);
+    }
 
     console.log('[DD] Synced pause event successfully');
   } catch (err) {
@@ -113,31 +130,30 @@ async function syncPauseEvent(data) {
 }
 
 /**
- * Queue a failed event for later retry.
+ * Queue a failed event for later retry (scoped to the current user).
  */
 async function queueEvent(data) {
-  const { dd_sync_queue = [] } = await chrome.storage.local.get('dd_sync_queue');
-  dd_sync_queue.push({ ...data, queued_at: Date.now() });
-  await chrome.storage.local.set({ dd_sync_queue });
+  const queue = (await DDStorage.get(DDStorage.KEYS.SYNC_QUEUE)) || [];
+  queue.push({ ...data, queued_at: Date.now() });
+  await DDStorage.set(DDStorage.KEYS.SYNC_QUEUE, queue);
 }
 
 /**
- * Retry all queued events.
+ * Retry all queued events for the current user.
  */
 async function retrySyncQueue() {
-  const { dd_sync_queue = [] } = await chrome.storage.local.get('dd_sync_queue');
-  if (dd_sync_queue.length === 0) return;
+  const queue = (await DDStorage.get(DDStorage.KEYS.SYNC_QUEUE)) || [];
+  if (queue.length === 0) return;
 
-  console.log(`[DD] Retrying ${dd_sync_queue.length} queued events`);
+  console.log(`[DD] Retrying ${queue.length} queued events`);
 
   // Clear queue first to avoid duplicates if new events come in
-  await chrome.storage.local.set({ dd_sync_queue: [] });
+  await DDStorage.set(DDStorage.KEYS.SYNC_QUEUE, []);
 
   const failedEvents = [];
-  for (const event of dd_sync_queue) {
+  for (const event of queue) {
     const { queued_at, ...data } = event;
     try {
-      // Try direct insert without queue (avoid infinite recursion)
       const { dd_user_id } = await chrome.storage.local.get('dd_user_id');
       if (!dd_user_id) continue;
 
@@ -147,7 +163,19 @@ async function retrySyncQueue() {
         continue;
       }
 
-      await restoreSession();
+      const session = await restoreSession();
+      if (!session) {
+        // Auth is broken — stop retrying all events
+        const remaining = queue.slice(queue.indexOf(event)).map(e => {
+          const { queued_at: _, ...d } = e;
+          return { ...d, queued_at: Date.now() };
+        });
+        if (remaining.length > 0) {
+          const currentQueue = (await DDStorage.get(DDStorage.KEYS.SYNC_QUEUE)) || [];
+          await DDStorage.set(DDStorage.KEYS.SYNC_QUEUE, [...currentQueue, ...remaining]);
+        }
+        return;
+      }
       await syncPauseEvent(data);
     } catch (e) {
       failedEvents.push(event);
@@ -155,31 +183,35 @@ async function retrySyncQueue() {
   }
 
   if (failedEvents.length > 0) {
-    const { dd_sync_queue: currentQueue = [] } = await chrome.storage.local.get('dd_sync_queue');
-    await chrome.storage.local.set({ dd_sync_queue: [...currentQueue, ...failedEvents] });
+    const currentQueue = (await DDStorage.get(DDStorage.KEYS.SYNC_QUEUE)) || [];
+    await DDStorage.set(DDStorage.KEYS.SYNC_QUEUE, [...currentQueue, ...failedEvents]);
   }
 }
 
 /**
- * Check pro status from Supabase and cache locally.
+ * Check pro status from Supabase and cache locally (scoped to user).
  */
 async function checkProStatus() {
   const { dd_user_id } = await chrome.storage.local.get('dd_user_id');
   if (!dd_user_id) return;
 
+  DDStorage.setActiveUser(dd_user_id);
+
   const client = getSupabaseClient();
   if (!client) return;
 
   try {
-    await restoreSession();
+    const session = await restoreSession();
+    if (!session) return; // No valid session, skip
+
     const { data, error } = await client
-      .from('profiles')
+      .from('user_profiles')
       .select('is_pro')
       .eq('id', dd_user_id)
       .single();
 
     if (!error && data) {
-      await chrome.storage.local.set({ dd_pro: data.is_pro });
+      await DDStorage.set(DDStorage.KEYS.PRO, data.is_pro);
     }
   } catch (e) {
     console.warn('[DD] Pro status check failed:', e);
