@@ -45,6 +45,10 @@
       font-weight: 400;
       color: #1a3d2b;
       letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #1a3d2b, #52b788, #f4c430);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     #auth-screen h2 {
       font-size: 15px;
@@ -180,6 +184,10 @@
       font-weight: 400;
       color: #1a3d2b;
       letter-spacing: -0.4px;
+      background: linear-gradient(90deg, #1a3d2b, #52b788, #f4c430);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     .dd-status {
       display: flex;
@@ -634,52 +642,55 @@
         <option value="30">30 seconds</option>
         <option value="60">60 seconds</option>
       </select>
-      <div class="settings-section-label" style="font-size:11px;font-weight:700;color:#1a3d2b;text-transform:uppercase;letter-spacing:0.06em;margin:16px 0 8px;">Tell us more</div>
-      <p style="font-size:12px;color:#888;margin:0 0 10px;">Helps us personalise your experience and show how your behaviour compares.</p>
+      <div id="dd-tell-us-more">
+        <div class="settings-section-label" style="font-size:11px;font-weight:700;color:#1a3d2b;text-transform:uppercase;letter-spacing:0.06em;margin:16px 0 8px;">Tell us more</div>
+        <p style="font-size:12px;color:#888;margin:0 0 10px;">Helps us personalise your experience and show how your behaviour compares.</p>
+        <p id="dd-profile-hint" style="font-size:11px;color:#aaa;margin:0 0 10px;display:none;">Complete this once — it moves to your dashboard after.</p>
 
-      <div class="settings-label">Annual salary (optional)</div>
-      <select id="dd-salary-bracket">
-        <option value="">Prefer not to say</option>
-        <option value="15000">Under £20,000</option>
-        <option value="25000">£20,000 – £30,000</option>
-        <option value="35000">£30,000 – £40,000</option>
-        <option value="47500">£40,000 – £55,000</option>
-        <option value="67500">£55,000 – £80,000</option>
-        <option value="90000">£80,000 – £100,000</option>
-        <option value="120000">Over £100,000</option>
-      </select>
+        <div class="settings-label">Annual salary (optional)</div>
+        <select id="dd-salary-bracket">
+          <option value="">Prefer not to say</option>
+          <option value="15000">Under £20,000</option>
+          <option value="25000">£20,000 – £30,000</option>
+          <option value="35000">£30,000 – £40,000</option>
+          <option value="47500">£40,000 – £55,000</option>
+          <option value="67500">£55,000 – £80,000</option>
+          <option value="90000">£80,000 – £100,000</option>
+          <option value="120000">Over £100,000</option>
+        </select>
 
-      <div class="settings-label" style="margin-top:10px;">Gender</div>
-      <select id="dd-gender">
-        <option value="">Prefer not to say</option>
-        <option value="female">Female</option>
-        <option value="male">Male</option>
-        <option value="nonbinary">Non-binary</option>
-        <option value="other">Other / self-describe</option>
-      </select>
+        <div class="settings-label" style="margin-top:10px;">Gender</div>
+        <select id="dd-gender">
+          <option value="">Prefer not to say</option>
+          <option value="female">Female</option>
+          <option value="male">Male</option>
+          <option value="nonbinary">Non-binary</option>
+          <option value="other">Other / self-describe</option>
+        </select>
 
-      <div class="settings-label" style="margin-top:10px;">Age range</div>
-      <select id="dd-age-range">
-        <option value="">Prefer not to say</option>
-        <option value="18-24">18–24</option>
-        <option value="25-34">25–34</option>
-        <option value="35-44">35–44</option>
-        <option value="45-54">45–54</option>
-        <option value="55-64">55–64</option>
-        <option value="65+">65+</option>
-      </select>
+        <div class="settings-label" style="margin-top:10px;">Age range</div>
+        <select id="dd-age-range">
+          <option value="">Prefer not to say</option>
+          <option value="18-24">18–24</option>
+          <option value="25-34">25–34</option>
+          <option value="35-44">35–44</option>
+          <option value="45-54">45–54</option>
+          <option value="55-64">55–64</option>
+          <option value="65+">65+</option>
+        </select>
 
-      <div class="settings-label" style="margin-top:10px;">ADHD diagnosis</div>
-      <select id="dd-adhd-status">
-        <option value="">Prefer not to say</option>
-        <option value="diagnosed">Formally diagnosed</option>
-        <option value="self_identified">Self-identified / awaiting assessment</option>
-        <option value="suspected">I think I might have it</option>
-        <option value="no">No ADHD diagnosis</option>
-      </select>
+        <div class="settings-label" style="margin-top:10px;">ADHD diagnosis</div>
+        <select id="dd-adhd-status">
+          <option value="">Prefer not to say</option>
+          <option value="diagnosed">Formally diagnosed</option>
+          <option value="self_identified">Self-identified / awaiting assessment</option>
+          <option value="suspected">I think I might have it</option>
+          <option value="no">No ADHD diagnosis</option>
+        </select>
 
-      <button id="dd-profile-save" style="width:100%;margin-top:14px;padding:10px;min-height:48px;background:#1a3d2b;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Save profile</button>
-      <p id="dd-profile-saved-msg" style="font-size:12px;color:#52b788;text-align:center;margin:6px 0 0;display:none;">Saved!</p>
+        <button id="dd-profile-save" style="width:100%;margin-top:14px;padding:10px;min-height:48px;background:#1a3d2b;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Save profile</button>
+        <p id="dd-profile-saved-msg" style="font-size:12px;color:#52b788;text-align:center;margin:6px 0 0;display:none;">Saved!</p>
+      </div>
 
       <a class="dd-link" href="https://dopaminedelay.com/dashboard" target="_blank">
         Account settings &rarr;

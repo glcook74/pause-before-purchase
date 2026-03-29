@@ -611,6 +611,33 @@ async function loadDashboardData() {
 // ===== PROFILE TAB =====
 
 async function initProfileTab() {
+  const tellUsMore = document.getElementById('dd-tell-us-more');
+  const profileHint = document.getElementById('dd-profile-hint');
+
+  // Check if onboarding profile is already complete — hide section if so
+  const { dd_user_id } = await chrome.storage.local.get('dd_user_id');
+  if (dd_user_id && tellUsMore) {
+    const client = getPopupClient();
+    if (client) {
+      try {
+        const { data: profileRow } = await client
+          .from('user_profiles')
+          .select('onboarding_done')
+          .eq('id', dd_user_id)
+          .single();
+
+        if (profileRow && profileRow.onboarding_done) {
+          tellUsMore.style.display = 'none';
+        } else if (profileHint) {
+          profileHint.style.display = 'block';
+        }
+      } catch (e) {
+        // Query failed — show the section as normal, show hint
+        if (profileHint) profileHint.style.display = 'block';
+      }
+    }
+  }
+
   const stored = await chrome.storage.local.get('dd_user_profile');
   const profile = stored.dd_user_profile || {};
 
