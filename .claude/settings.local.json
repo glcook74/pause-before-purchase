@@ -9,7 +9,8 @@
       "Bash(git commit:*)",
       "Bash(git rm:*)",
       "Read(//c/Users/glcoo/DOPAMINE_DELAY_MASTER/**)",
-      "Bash(powershell Compress-Archive -Path 'dopamine-delay-ext\\\\*' -DestinationPath 'dopamine-delay-v2.1.0.zip' -Force)"
+      "Bash(powershell Compress-Archive -Path 'dopamine-delay-ext\\\\*' -DestinationPath 'dopamine-delay-v2.1.0.zip' -Force)",
+      "Bash(zip -r dopamine-delay-ext.zip dopamine-delay-ext/ --exclude \"*.git*\" --exclude \"node_modules/*\")"
     ]
   }
 }

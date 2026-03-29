@@ -510,8 +510,7 @@
             dark_patterns_detected: currentDarkPatterns.length > 0 ? currentDarkPatterns : null,
           }
         });
-        closeOverlay(overlay);
-        showCelebrationToast();
+        showCelebrationScreen(overlay, 15);
       });
 
     modal.querySelector('#dd-planned-buy')
@@ -744,10 +743,13 @@
 
       <div class="dd-timer-section">
         <p class="dd-breathe-text">Take a moment.</p>
-        <div class="dd-progress-bar">
-          <div class="dd-progress-fill" id="dd-progress" style="width:100%"></div>
+        <div class="dd-svg-timer-wrap">
+          <svg class="dd-svg-timer" viewBox="0 0 80 80" width="80" height="80">
+            <circle class="dd-svg-track" cx="40" cy="40" r="34" />
+            <circle class="dd-svg-fill" id="dd-svg-fill" cx="40" cy="40" r="34" />
+          </svg>
+          <span class="dd-svg-number" id="dd-timer">${remaining}</span>
         </div>
-        <p class="dd-timer-label" id="dd-timer">Pausing for ${remaining} more seconds</p>
       </div>
 
       <button class="dd-save-btn" id="dd-save-btn">Keep waiting — save for later</button>
@@ -761,21 +763,31 @@
     });
 
     // Timer
-    const timerEl = document.getElementById('dd-timer');
-    const progressEl = document.getElementById('dd-progress');
     const proceedBtn = document.getElementById('dd-proceed');
+    const circumference = 2 * Math.PI * 34; // r=34
+    const svgFill = document.getElementById('dd-svg-fill');
+    if (svgFill) svgFill.style.strokeDasharray = circumference;
 
     timerInterval = setInterval(() => {
       remaining--;
-      if (timerEl) timerEl.textContent = 'Pausing for ' + remaining + ' more seconds';
-      if (progressEl) {
-        const pct = (remaining / pauseDuration) * 100;
-        progressEl.style.width = pct + '%';
+      const timerEl = document.getElementById('dd-timer');
+      const pct = remaining / pauseDuration;
+      if (timerEl) timerEl.textContent = remaining > 0 ? remaining : '✓';
+      if (svgFill) {
+        const offset = circumference * (1 - pct);
+        svgFill.style.strokeDashoffset = offset;
+        // Colour transition: teal → gold → warm amber
+        if (pct > 0.5) {
+          svgFill.style.stroke = '#2D7A5F';
+        } else if (pct > 0.25) {
+          svgFill.style.stroke = '#A07830';
+        } else {
+          svgFill.style.stroke = '#C47A1A';
+        }
       }
       if (remaining <= 0) {
         clearInterval(timerInterval);
         timerInterval = null;
-        if (timerEl) timerEl.textContent = '';
         if (proceedBtn) {
           proceedBtn.disabled = false;
           proceedBtn.textContent = 'I still want to buy';
@@ -896,8 +908,7 @@
         },
       });
 
-      closeOverlay(overlay);
-      showCelebrationToast();
+      showCelebrationScreen(overlay, 15);
     });
 
     // Sleep on it button (high-value items only)
@@ -925,27 +936,51 @@
     });
   }
 
-  // ===== CELEBRATION TOAST =====
+  // ===== CELEBRATION SCREEN =====
 
-  function showCelebrationToast() {
-    const existing = document.querySelector('.dd-celebration-toast');
-    if (existing) existing.remove();
+  function showCelebrationScreen(overlay, pointsEarned) {
+    const modal = overlay.querySelector('.dd-modal');
+    if (!modal) return;
 
-    const toast = document.createElement('div');
-    toast.className = 'dd-celebration-toast';
-    toast.innerHTML = `
-      <div class="dd-celebration">
-        <div class="dd-celebration-points">✦ +15 Delay Points</div>
-        <div class="dd-celebration-message">You just chose differently.</div>
-        <div class="dd-celebration-sub">That's what control looks like.</div>
+    modal.innerHTML = `
+      <div class="dd-celebration-screen">
+        <div class="dd-confetti-wrap" id="dd-confetti-wrap"></div>
+        <div class="dd-celebration-icon">✦</div>
+        <h2 class="dd-celebration-heading">You chose differently.</h2>
+        <p class="dd-celebration-body">That's what control looks like.</p>
+        <div class="dd-celebration-xp">+${pointsEarned} Delay Points</div>
+        <button class="dd-celebration-close" id="dd-celebration-close">Keep going</button>
       </div>
     `;
-    document.body.appendChild(toast);
 
-    setTimeout(() => {
-      if (toast.parentNode) toast.remove();
+    // Confetti burst — pure CSS particles, no library needed
+    const wrap = document.getElementById('dd-confetti-wrap');
+    const colours = ['#2D7A5F', '#A07830', '#F5A623', '#1B4332', '#FAF7F0'];
+    for (let i = 0; i < 28; i++) {
+      const dot = document.createElement('span');
+      dot.className = 'dd-confetti-dot';
+      dot.style.cssText = `
+        left: ${Math.random() * 100}%;
+        background: ${colours[Math.floor(Math.random() * colours.length)]};
+        animation-delay: ${Math.random() * 0.4}s;
+        animation-duration: ${0.7 + Math.random() * 0.6}s;
+        width: ${4 + Math.random() * 5}px;
+        height: ${4 + Math.random() * 5}px;
+        border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+      `;
+      wrap.appendChild(dot);
+    }
+
+    document.getElementById('dd-celebration-close').addEventListener('click', () => {
+      closeOverlay(overlay);
       window.open('https://dopaminedelay.com/dashboard?skip_tour=true&section=saved', '_blank');
-    }, 1200);
+    });
+
+    // Auto-close after 4 seconds if user doesn't tap
+    setTimeout(() => {
+      if (overlay && overlay.parentNode) closeOverlay(overlay);
+      window.open('https://dopaminedelay.com/dashboard?skip_tour=true&section=saved', '_blank');
+    }, 3000);
   }
 
   // ===== HELPERS =====
