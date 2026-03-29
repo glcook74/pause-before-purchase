@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Welcome to Dopamine Delay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -12,8 +15,8 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background: #F5F0E8;
+      font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #f0ede4;
       color: #2A3A35;
       min-height: 100vh;
       display: flex;
@@ -49,10 +52,10 @@
     }
 
     .ob-heading {
-      font-family: Georgia, 'Times New Roman', serif;
+      font-family: 'Fredoka One', cursive;
       font-size: 28px;
-      font-weight: 700;
-      color: #2A3A35;
+      font-weight: 400;
+      color: #1a3d2b;
       margin-bottom: 12px;
     }
 
@@ -72,10 +75,11 @@
 
     .ob-step {
       flex: 1;
-      background: rgba(255, 255, 255, 0.7);
-      border: 1px solid rgba(42, 125, 107, 0.12);
-      border-radius: 14px;
+      background: #fff;
+      border: 1px solid rgba(26, 61, 43, 0.08);
+      border-radius: 20px;
       padding: 20px 14px;
+      box-shadow: 0 4px 16px rgba(26, 61, 43, 0.12);
     }
 
     .ob-step-icon {
@@ -86,8 +90,8 @@
 
     .ob-step-label {
       font-size: 13px;
-      font-weight: 600;
-      color: #2A7D6B;
+      font-weight: 700;
+      color: #1a3d2b;
       display: block;
       margin-bottom: 4px;
     }
@@ -110,26 +114,27 @@
       align-items: center;
       gap: 14px;
       padding: 16px 20px;
-      background: rgba(255, 255, 255, 0.7);
-      border: 2px solid rgba(42, 125, 107, 0.15);
-      border-radius: 14px;
+      background: #fff;
+      border: 2px solid rgba(26, 61, 43, 0.12);
+      border-radius: 20px;
       cursor: pointer;
       transition: all 0.2s;
       text-align: left;
-      font-family: inherit;
+      font-family: 'Nunito', inherit;
       font-size: 14px;
       color: #2A3A35;
       width: 100%;
+      box-shadow: 0 4px 16px rgba(26, 61, 43, 0.12);
     }
 
     .ob-option:hover {
-      border-color: #2A7D6B;
-      background: rgba(42, 125, 107, 0.06);
+      border-color: #1a3d2b;
+      background: rgba(26, 61, 43, 0.04);
     }
 
     .ob-option.selected {
-      border-color: #2A7D6B;
-      background: rgba(42, 125, 107, 0.1);
+      border-color: #1a3d2b;
+      background: rgba(26, 61, 43, 0.08);
     }
 
     .ob-option-icon {
@@ -141,7 +146,8 @@
     .ob-btn {
       display: inline-block;
       padding: 14px 36px;
-      background: #2A7D6B;
+      min-height: 48px;
+      background: #1a3d2b;
       color: #fff;
       border: none;
       border-radius: 12px;
@@ -149,18 +155,21 @@
       font-weight: 700;
       cursor: pointer;
       transition: all 0.2s;
-      font-family: inherit;
+      font-family: 'Nunito', inherit;
+      box-shadow: 0 2px 8px rgba(26, 61, 43, 0.25);
     }
 
     .ob-btn:hover {
-      background: #236B5C;
+      background: #153324;
       transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(26, 61, 43, 0.3);
     }
 
     .ob-btn:disabled {
       background: #B0C4BD;
       cursor: not-allowed;
       transform: none;
+      box-shadow: none;
     }
 
     .ob-btn-secondary {
@@ -171,11 +180,11 @@
       cursor: pointer;
       padding: 8px;
       margin-top: 8px;
-      font-family: inherit;
+      font-family: 'Nunito', inherit;
     }
 
     .ob-btn-secondary:hover {
-      color: #2A7D6B;
+      color: #1a3d2b;
     }
 
     /* Progress dots */
@@ -190,12 +199,12 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: rgba(42, 125, 107, 0.2);
+      background: rgba(26, 61, 43, 0.2);
       transition: all 0.3s;
     }
 
     .ob-dot.active {
-      background: #2A7D6B;
+      background: #1a3d2b;
       width: 24px;
       border-radius: 4px;
     }
@@ -203,13 +212,15 @@
     /* Points celebration */
     .ob-points {
       display: inline-block;
-      background: #C9921A;
-      color: #fff;
+      background: #f4c430;
+      color: #1a3d2b;
       padding: 8px 20px;
       border-radius: 20px;
+      font-family: 'Fredoka One', cursive;
       font-size: 18px;
-      font-weight: 700;
+      font-weight: 400;
       margin: 16px 0;
+      box-shadow: 0 4px 16px rgba(244, 196, 48, 0.3);
     }
   </style>
 </head>
