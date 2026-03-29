@@ -7,7 +7,9 @@
       "Bash(grep -r \"onboarding\\\\|extension\" /c/Users/glcoo/pause-before-purchase-c81053f6 --include=*.tsx --include=*.ts --include=*.jsx --include=*.js --include=*.json)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Read(//c/Users/glcoo/DOPAMINE_DELAY_MASTER/**)",
+      "Bash(powershell Compress-Archive -Path 'dopamine-delay-ext\\\\*' -DestinationPath 'dopamine-delay-v2.1.0.zip' -Force)"
     ]
   }
 }
